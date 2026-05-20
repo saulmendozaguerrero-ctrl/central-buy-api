@@ -1,0 +1,85 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { PricesService } from './prices.service';
+import { CreatePriceDto } from './dto/create-price.dto';
+import { PriceHistoryQueryDto } from './dto/price-query.dto';
+import { AuthGuard } from '../../common/guards/auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { PlanGuard } from '../../common/guards/plan.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { PlanRequired } from '../../common/decorators/plan-required.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { UserRole } from '../users/entities/user.entity';
+import { FuelProduct, FuelRegion } from './entities/fuel-price.entity';
+import { User } from '../users/entities/user.entity';
+
+@ApiTags('Prices')
+@Controller('prices')
+export class PricesController {
+  constructor(private readonly pricesService: PricesService) {}
+
+  @Get('latest')
+  @UseGuards(AuthGuard, PlanGuard)
+  @PlanRequired('particular')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get latest prices for all products and regions' })
+  async getLatest() {
+    return this.pricesService.getLatest();
+  }
+
+  @Get('best')
+  @UseGuards(AuthGuard, PlanGuard)
+  @PlanRequired('particular')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get best world price per product' })
+  async getBest() {
+    return this.pricesService.getBestPrices();
+  }
+
+  @Get('history')
+  @UseGuards(AuthGuard, PlanGuard)
+  @PlanRequired('particular')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get price history with optional filters' })
+  async getHistory(@Query() query: PriceHistoryQueryDto) {
+    return this.pricesService.getHistory(query);
+  }
+
+  @Get('product/:product')
+  @UseGuards(AuthGuard, PlanGuard)
+  @PlanRequired('particular')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get latest prices by product' })
+  async getByProduct(@Param('product') product: FuelProduct) {
+    return this.pricesService.getByProduct(product);
+  }
+
+  @Get('region/:region')
+  @UseGuards(AuthGuard, PlanGuard)
+  @PlanRequired('particular')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get latest prices by region' })
+  async getByRegion(@Param('region') region: FuelRegion) {
+    return this.pricesService.getByRegion(region);
+  }
+
+  @Post('admin/upload')
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '[Admin] Upload prices manually' })
+  async uploadPrices(
+    @Body() prices: CreatePriceDto[],
+    @CurrentUser() user: User,
+  ) {
+    return this.pricesService.uploadPrices(prices, user);
+  }
+}
