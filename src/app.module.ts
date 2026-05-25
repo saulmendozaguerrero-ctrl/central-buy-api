@@ -105,13 +105,13 @@ import { AppService } from './app.service';
     }),
 
     // ─── Feature Modules ─────────────────────────────────────────────────────
-    // AuthModule,
+    AuthModule,
     UsersModule,
-    // SubscriptionsModule,
-    // PricesModule,
+    SubscriptionsModule,
+    PricesModule,
     // ConfiguratorModule,
     // ConsultationsModule,
-    // FleetModule,
+    FleetModule,
     // OrganizationsModule,
     // AdminModule,
     // AcademyModule,

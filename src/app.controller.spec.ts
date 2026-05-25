@@ -15,8 +15,18 @@ describe('AppController', () => {
   });
 
   describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+    it('should return Central Buy API info', () => {
+      const result = appController.root();
+      expect(result.name).toBe('Central Buy API');
+      expect(result.docs).toBe('/api/docs');
+    });
+  });
+
+  describe('health', () => {
+    it('should return health status ok', () => {
+      const result = appController.health();
+      expect(result.status).toBe('ok');
+      expect(result.version).toBe('1.0.0');
     });
   });
 });
