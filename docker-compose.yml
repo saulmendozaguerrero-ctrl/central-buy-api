@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: centralbuy-postgres
+    environment:
+      POSTGRES_DB: centralbuy
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - centralbuy-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: centralbuy-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - centralbuy-network
+
+  # NestJS Backend (optional: if you want to run from docker)
+  # api:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: centralbuy-api
+  #   environment:
+  #     DATABASE_HOST: postgres
+  #     DATABASE_PORT: 5432
+  #     DATABASE_USER: postgres
+  #     DATABASE_PASS: postgres
+  #     DATABASE_NAME: centralbuy
+  #     REDIS_HOST: redis
+  #     REDIS_PORT: 6379
+  #     NODE_ENV: development
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   networks:
+  #     - centralbuy-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  centralbuy-network:
+    driver: bridge
