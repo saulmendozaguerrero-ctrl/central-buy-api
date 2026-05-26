@@ -5,16 +5,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from '../../modules/users/entities/user.entity';
+import { UsersService } from '../../modules/users/users.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private readonly configService: ConfigService,
-    @InjectRepository(User)
-    private readonly userRepo: Repository<User>,
+    private readonly usersService: UsersService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -33,7 +30,7 @@ export class AuthGuard implements CanActivate {
 
       if (nodeEnv === 'development' && token.startsWith('mock_')) {
         const clerkUserId = token.replace('mock_', '');
-        const user = await this.userRepo.findOne({ where: { clerkUserId } });
+        const user = await this.usersService.findByClerkId(clerkUserId);
 
         if (!user) {
           throw new UnauthorizedException('User not found');
@@ -45,7 +42,6 @@ export class AuthGuard implements CanActivate {
       }
 
       // Production: verify Clerk JWT
-      // We validate via Clerk's JWKS endpoint
       const { verifyToken } = await import('@clerk/backend');
       const clerkSecretKey = this.configService.get<string>('clerk.secretKey') ?? '';
 
@@ -54,7 +50,7 @@ export class AuthGuard implements CanActivate {
       });
 
       const clerkUserId = payload.sub;
-      const user = await this.userRepo.findOne({ where: { clerkUserId } });
+      const user = await this.usersService.findByClerkId(clerkUserId);
 
       if (!user) {
         throw new UnauthorizedException('User not registered in Central Buy');
