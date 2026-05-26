@@ -8,9 +8,10 @@ import { FuelLog } from './entities/fuel-log.entity';
 import { EcoScore } from './entities/eco-score.entity';
 import { Report } from './entities/report.entity';
 import { Subscription } from '../subscriptions/entities/subscription.entity';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Vehicle, FuelLog, EcoScore, Report, Subscription])],
+  imports: [TypeOrmModule.forFeature([Vehicle, FuelLog, EcoScore, Report, Subscription, UsersModule])],
   controllers: [FleetController],
   providers: [FleetService, EcoScoreService],
   exports: [FleetService, EcoScoreService, TypeOrmModule],

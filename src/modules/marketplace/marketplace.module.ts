@@ -4,9 +4,10 @@ import { MarketplaceController } from './marketplace.controller';
 import { MarketplaceService } from './marketplace.service';
 import { MarketplaceListing } from './entities/listing.entity';
 import { Subscription } from '../subscriptions/entities/subscription.entity';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([MarketplaceListing, Subscription])],
+  imports: [TypeOrmModule.forFeature([MarketplaceListing, Subscription, UsersModule])],
   controllers: [MarketplaceController],
   providers: [MarketplaceService],
   exports: [MarketplaceService],

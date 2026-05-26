@@ -4,9 +4,10 @@ import { ConfiguratorController } from './configurator.controller';
 import { ConfiguratorService } from './configurator.service';
 import { PriceConfig } from './entities/price-config.entity';
 import { Subscription } from '../subscriptions/entities/subscription.entity';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PriceConfig, Subscription])],
+  imports: [TypeOrmModule.forFeature([PriceConfig, Subscription, UsersModule])],
   controllers: [ConfiguratorController],
   providers: [ConfiguratorService],
   exports: [ConfiguratorService],
