@@ -7,7 +7,7 @@ import { Subscription } from '../subscriptions/entities/subscription.entity';
 import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Subscription, UsersModule])],
+  imports: [TypeOrmModule.forFeature([User, Subscription]), UsersModule],
   controllers: [AdminController],
   providers: [AdminService],
   exports: [AdminService],
