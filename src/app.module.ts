@@ -89,7 +89,7 @@ import { AppService } from './app.service';
           AcademyContent,
           MarketplaceListing,
         ],
-        synchronize: config.get<string>('app.nodeEnv') === 'development',
+        synchronize: true,
         logging: config.get<string>('app.nodeEnv') === 'development',
         ssl:
           config.get<string>('app.nodeEnv') === 'production'
