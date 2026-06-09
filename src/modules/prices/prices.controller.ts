@@ -5,13 +5,10 @@ import { CreatePriceDto } from './dto/create-price.dto';
 import { PriceHistoryQueryDto } from './dto/price-query.dto';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { PlanGuard } from '../../common/guards/plan.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { PlanRequired } from '../../common/decorators/plan-required.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { UserRole } from '../users/entities/user.entity';
+import { UserRole, User } from '../users/entities/user.entity';
 import { FuelProduct, FuelRegion } from './entities/fuel-price.entity';
-import { User } from '../users/entities/user.entity';
 
 @ApiTags('Prices')
 @Controller('prices')
@@ -27,24 +24,21 @@ export class PricesController {
   async getBest() { return this.pricesService.getBestPrices(); }
 
   @Get('history')
-  @UseGuards(AuthGuard, PlanGuard)
-  @PlanRequired('particular')
+  @UseGuards(AuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Price history (auth required)' })
+  @ApiOperation({ summary: 'Price history' })
   async getHistory(@Query() query: PriceHistoryQueryDto) { return this.pricesService.getHistory(query); }
 
   @Get('product/:product')
-  @UseGuards(AuthGuard, PlanGuard)
-  @PlanRequired('particular')
+  @UseGuards(AuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Prices by product (auth required)' })
+  @ApiOperation({ summary: 'Prices by product' })
   async getByProduct(@Param('product') product: FuelProduct) { return this.pricesService.getByProduct(product); }
 
   @Get('region/:region')
-  @UseGuards(AuthGuard, PlanGuard)
-  @PlanRequired('particular')
+  @UseGuards(AuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Prices by region (auth required)' })
+  @ApiOperation({ summary: 'Prices by region' })
   async getByRegion(@Param('region') region: FuelRegion) { return this.pricesService.getByRegion(region); }
 
   @Post('admin/upload')
@@ -52,5 +46,5 @@ export class PricesController {
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: '[Admin] Upload prices' })
-  async uploadPrices(@Body() prices: CreatePriceDto[], @CurrentUser() user: User) { return this.pricesService.uploadPrices(prices, user.id); }
+  async uploadPrices(@Body() prices: any, @CurrentUser() user: User) { return this.pricesService.uploadPrices(prices, user.id); }
 }
