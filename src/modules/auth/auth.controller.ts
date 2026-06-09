@@ -26,12 +26,20 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Register user after Clerk sign-up' })
+  @ApiOperation({ summary: 'Register user after Clerk sign-up (PUBLIC)' })
   @ApiResponse({ status: 201, description: 'User registered successfully' })
   async register(@Body() dto: RegisterDto) {
-    // Clerk already authenticated the user on frontend
-    // We just register them in our database
-    return this.authService.register(dto, dto.clerkUserId);
+    // Public endpoint: Clerk authentication happens on frontend
+    // We just register them in our database with their clerkUserId
+    try {
+      return await this.authService.register(dto, dto.clerkUserId);
+    } catch (error: any) {
+      // If user already exists, return existing user
+      if (error.message?.includes('already registered')) {
+        return this.usersService.findByClerkId(dto.clerkUserId);
+      }
+      throw error;
+    }
   }
 
   @Get('me')
