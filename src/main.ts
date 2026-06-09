@@ -69,28 +69,7 @@ async function bootstrap() {
       tagsSorter: 'alpha',
     },
   });
-app.get('/api/seed', async (req, res) => {
-  try {
-    const prices = [
-      { product: 'Diesel', region: 'Europe', priceEur: 1171.50, priceUsd: 1285.00 },
-      { product: 'Gasoline', region: 'Europe', priceEur: 987.30, priceUsd: 1082.50 },
-      { product: 'Jet Fuel', region: 'Europe', priceEur: 1043.20, priceUsd: 1144.00 },
-      { product: 'LNG', region: 'Global', priceEur: 19.86, priceUsd: 21.75 },
-      { product: 'Brent Crude', region: 'Global', priceEur: 752.40, priceUsd: 825.00 },
-    ];
-    
-    for (const p of prices) {
-      await dataSource.query(
-        'INSERT INTO prices (product, region, price_eur, price_usd, source, timestamp) VALUES ($1, $2, $3, $4, $5, NOW())',
-        [p.product, p.region, p.priceEur, p.priceUsd, 'Platts']
-      );
-    }
-    
-    res.json({ message: 'Seeded', count: prices.length });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
+
 
   await app.listen(port);
 
