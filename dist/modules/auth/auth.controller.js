@@ -23,19 +23,39 @@ let AuthController = class AuthController {
         this.authService = authService;
     }
     async register(dto) {
-        return this.authService.register(dto, dto.clerkUserId);
+        try {
+            return await this.authService.register(dto, dto.clerkUserId);
+        }
+        catch (error) {
+            if (error.status === 409) {
+                return { message: 'User already registered', email: dto.email };
+            }
+            throw error;
+        }
+    }
+    async clerkWebhook(body) {
+        return this.authService.handleClerkWebhook(body);
     }
 };
 exports.AuthController = AuthController;
 __decorate([
     (0, common_1.Post)('register'),
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
-    (0, swagger_1.ApiOperation)({ summary: 'Register user' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Register user after Clerk sign-up (PUBLIC)' }),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [register_dto_1.RegisterDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "register", null);
+__decorate([
+    (0, common_1.Post)('webhook/clerk'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: 'Clerk webhook' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "clerkWebhook", null);
 exports.AuthController = AuthController = __decorate([
     (0, swagger_1.ApiTags)('Auth'),
     (0, common_1.Controller)('auth'),

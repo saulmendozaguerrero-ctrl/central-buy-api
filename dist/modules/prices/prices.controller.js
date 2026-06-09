@@ -31,42 +31,24 @@ let PricesController = class PricesController {
     constructor(pricesService) {
         this.pricesService = pricesService;
     }
-    async getLatest() {
-        return this.pricesService.getLatest();
-    }
-    async getBest() {
-        return this.pricesService.getBestPrices();
-    }
-    async getHistory(query) {
-        return this.pricesService.getHistory(query);
-    }
-    async getByProduct(product) {
-        return this.pricesService.getByProduct(product);
-    }
-    async getByRegion(region) {
-        return this.pricesService.getByRegion(region);
-    }
-    async uploadPrices(prices, user) {
-        return this.pricesService.uploadPrices(prices, user);
-    }
+    async getLatest() { return this.pricesService.getLatest(); }
+    async getBest() { return this.pricesService.getBestPrices(); }
+    async getHistory(query) { return this.pricesService.getHistory(query); }
+    async getByProduct(product) { return this.pricesService.getByProduct(product); }
+    async getByRegion(region) { return this.pricesService.getByRegion(region); }
+    async uploadPrices(prices, user) { return this.pricesService.uploadPrices(prices, user.id); }
 };
 exports.PricesController = PricesController;
 __decorate([
     (0, common_1.Get)('latest'),
-    (0, common_1.UseGuards)(auth_guard_1.AuthGuard, plan_guard_1.PlanGuard),
-    (0, plan_required_decorator_1.PlanRequired)('particular'),
-    (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Get latest prices for all products and regions' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Get latest prices (PUBLIC)' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], PricesController.prototype, "getLatest", null);
 __decorate([
     (0, common_1.Get)('best'),
-    (0, common_1.UseGuards)(auth_guard_1.AuthGuard, plan_guard_1.PlanGuard),
-    (0, plan_required_decorator_1.PlanRequired)('particular'),
-    (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Get best world price per product' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Get best prices (PUBLIC)' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
@@ -76,7 +58,7 @@ __decorate([
     (0, common_1.UseGuards)(auth_guard_1.AuthGuard, plan_guard_1.PlanGuard),
     (0, plan_required_decorator_1.PlanRequired)('particular'),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Get price history with optional filters' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Price history (auth required)' }),
     __param(0, (0, common_1.Query)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [price_query_dto_1.PriceHistoryQueryDto]),
@@ -87,7 +69,7 @@ __decorate([
     (0, common_1.UseGuards)(auth_guard_1.AuthGuard, plan_guard_1.PlanGuard),
     (0, plan_required_decorator_1.PlanRequired)('particular'),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Get latest prices by product' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Prices by product (auth required)' }),
     __param(0, (0, common_1.Param)('product')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -98,7 +80,7 @@ __decorate([
     (0, common_1.UseGuards)(auth_guard_1.AuthGuard, plan_guard_1.PlanGuard),
     (0, plan_required_decorator_1.PlanRequired)('particular'),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Get latest prices by region' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Prices by region (auth required)' }),
     __param(0, (0, common_1.Param)('region')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -109,7 +91,7 @@ __decorate([
     (0, common_1.UseGuards)(auth_guard_1.AuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(user_entity_1.UserRole.ADMIN),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: '[Admin] Upload prices manually' }),
+    (0, swagger_1.ApiOperation)({ summary: '[Admin] Upload prices' }),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
