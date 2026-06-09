@@ -26,9 +26,6 @@ let PricesController = class PricesController {
     }
     async getLatest() { return this.pricesService.getLatest(); }
     async getBest() { return this.pricesService.getBestPrices(); }
-    async getHistory(query) { return this.pricesService.getHistory(query); }
-    async getByProduct(product) { return this.pricesService.getByProduct(product); }
-    async getByRegion(region) { return this.pricesService.getByRegion(region); }
     async seed() {
         const priceData = [
             { product: fuel_price_entity_1.FuelProduct.DIESEL, region: fuel_price_entity_1.FuelRegion.EUROPE, priceEur: 1171.50, priceUsd: 1285.00, priceDate: new Date().toISOString().split('T')[0] },
@@ -39,6 +36,9 @@ let PricesController = class PricesController {
         ];
         return await this.pricesService.uploadPrices(priceData, null);
     }
+    async getHistory(query) { return this.pricesService.getHistory(query); }
+    async getByProduct(product) { return this.pricesService.getByProduct(product); }
+    async getByRegion(region) { return this.pricesService.getByRegion(region); }
 };
 exports.PricesController = PricesController;
 __decorate([
@@ -55,6 +55,12 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], PricesController.prototype, "getBest", null);
+__decorate([
+    (0, common_1.Get)('seed'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], PricesController.prototype, "seed", null);
 __decorate([
     (0, common_1.Get)('history'),
     (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
@@ -85,12 +91,6 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], PricesController.prototype, "getByRegion", null);
-__decorate([
-    (0, common_1.Get)('seed'),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], PricesController.prototype, "seed", null);
 exports.PricesController = PricesController = __decorate([
     (0, swagger_1.ApiTags)('Prices'),
     (0, common_1.Controller)('prices'),

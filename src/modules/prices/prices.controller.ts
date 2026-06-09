@@ -18,6 +18,18 @@ export class PricesController {
   @ApiOperation({ summary: 'Get best prices (PUBLIC)' })
   async getBest() { return this.pricesService.getBestPrices(); }
 
+  @Get('seed')
+  async seed() {
+    const priceData = [
+      { product: FuelProduct.DIESEL, region: FuelRegion.EUROPE, priceEur: 1171.50, priceUsd: 1285.00, priceDate: new Date().toISOString().split('T')[0] },
+      { product: FuelProduct.GASOLINE, region: FuelRegion.EUROPE, priceEur: 987.30, priceUsd: 1082.50, priceDate: new Date().toISOString().split('T')[0] },
+      { product: FuelProduct.JET_FUEL, region: FuelRegion.EUROPE, priceEur: 1043.20, priceUsd: 1144.00, priceDate: new Date().toISOString().split('T')[0] },
+      { product: FuelProduct.CRUDE, region: FuelRegion.EUROPE, priceEur: 752.40, priceUsd: 825.00, priceDate: new Date().toISOString().split('T')[0] },
+      { product: FuelProduct.DIESEL, region: FuelRegion.LATAM, priceEur: 1098.20, priceUsd: 1205.00, priceDate: new Date().toISOString().split('T')[0] },
+    ] as any;
+    return await this.pricesService.uploadPrices(priceData, null as any);
+  }
+
   @Get('history')
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
@@ -35,16 +47,4 @@ export class PricesController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Prices by region' })
   async getByRegion(@Param('region') region: FuelRegion) { return this.pricesService.getByRegion(region); }
-     @Get('seed')
-  async seed() {
-    const priceData = [
-      { product: FuelProduct.DIESEL, region: FuelRegion.EUROPE, priceEur: 1171.50, priceUsd: 1285.00, priceDate: new Date().toISOString().split('T')[0] },
-      { product: FuelProduct.GASOLINE, region: FuelRegion.EUROPE, priceEur: 987.30, priceUsd: 1082.50, priceDate: new Date().toISOString().split('T')[0] },
-      { product: FuelProduct.JET_FUEL, region: FuelRegion.EUROPE, priceEur: 1043.20, priceUsd: 1144.00, priceDate: new Date().toISOString().split('T')[0] },
-      { product: FuelProduct.CRUDE, region: FuelRegion.EUROPE, priceEur: 752.40, priceUsd: 825.00, priceDate: new Date().toISOString().split('T')[0] },
-      { product: FuelProduct.DIESEL, region: FuelRegion.LATAM, priceEur: 1098.20, priceUsd: 1205.00, priceDate: new Date().toISOString().split('T')[0] },
-    ] as any;
-    return await this.pricesService.uploadPrices(priceData, null as any);
-  }
-
 }
