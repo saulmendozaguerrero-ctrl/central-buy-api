@@ -9,8 +9,5 @@ export declare class PricesController {
     getHistory(query: PriceHistoryQueryDto): Promise<import("./entities/fuel-price.entity").FuelPrice[]>;
     getByProduct(product: FuelProduct): Promise<import("./entities/fuel-price.entity").FuelPrice[]>;
     getByRegion(region: FuelRegion): Promise<import("./entities/fuel-price.entity").FuelPrice[]>;
-    seed(): Promise<{
-        message: string;
-        count: number;
-    }>;
+    seed(): Promise<import("./entities/fuel-price.entity").FuelPrice[]>;
 }

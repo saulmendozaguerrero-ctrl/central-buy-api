@@ -30,17 +30,14 @@ let PricesController = class PricesController {
     async getByProduct(product) { return this.pricesService.getByProduct(product); }
     async getByRegion(region) { return this.pricesService.getByRegion(region); }
     async seed() {
-        const prices = [
-            { product: 'Diesel', region: 'Europe', priceEur: 1171.50, priceUsd: 1285.00 },
-            { product: 'Gasoline', region: 'Europe', priceEur: 987.30, priceUsd: 1082.50 },
-            { product: 'Jet Fuel', region: 'Europe', priceEur: 1043.20, priceUsd: 1144.00 },
-            { product: 'LNG', region: 'Global', priceEur: 19.86, priceUsd: 21.75 },
-            { product: 'Brent Crude', region: 'Global', priceEur: 752.40, priceUsd: 825.00 },
+        const priceData = [
+            { product: fuel_price_entity_1.FuelProduct.DIESEL, region: fuel_price_entity_1.FuelRegion.EUROPE, priceEur: 1171.50, priceUsd: 1285.00, priceDate: new Date().toISOString().split('T')[0] },
+            { product: fuel_price_entity_1.FuelProduct.GASOLINE, region: fuel_price_entity_1.FuelRegion.EUROPE, priceEur: 987.30, priceUsd: 1082.50, priceDate: new Date().toISOString().split('T')[0] },
+            { product: fuel_price_entity_1.FuelProduct.JET_FUEL, region: fuel_price_entity_1.FuelRegion.EUROPE, priceEur: 1043.20, priceUsd: 1144.00, priceDate: new Date().toISOString().split('T')[0] },
+            { product: fuel_price_entity_1.FuelProduct.CRUDE, region: fuel_price_entity_1.FuelRegion.EUROPE, priceEur: 752.40, priceUsd: 825.00, priceDate: new Date().toISOString().split('T')[0] },
+            { product: fuel_price_entity_1.FuelProduct.DIESEL, region: fuel_price_entity_1.FuelRegion.LATAM, priceEur: 1098.20, priceUsd: 1205.00, priceDate: new Date().toISOString().split('T')[0] },
         ];
-        for (const p of prices) {
-            await this.pricesService.create(p);
-        }
-        return { message: 'Seeded', count: prices.length };
+        return await this.pricesService.uploadPrices(priceData, null);
     }
 };
 exports.PricesController = PricesController;
