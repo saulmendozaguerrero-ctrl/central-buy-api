@@ -35,20 +35,16 @@ export class PricesController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Prices by region' })
   async getByRegion(@Param('region') region: FuelRegion) { return this.pricesService.getByRegion(region); }
-  @Get('seed')
+    @Get('seed')
   async seed() {
-    const prices = [
-      { product: 'Diesel', region: 'Europe', priceEur: 1171.50, priceUsd: 1285.00 },
-      { product: 'Gasoline', region: 'Europe', priceEur: 987.30, priceUsd: 1082.50 },
-      { product: 'Jet Fuel', region: 'Europe', priceEur: 1043.20, priceUsd: 1144.00 },
-      { product: 'LNG', region: 'Global', priceEur: 19.86, priceUsd: 21.75 },
-      { product: 'Brent Crude', region: 'Global', priceEur: 752.40, priceUsd: 825.00 },
+    const priceData = [
+      { product: 'Diesel', region: 'Europe', priceEur: 1171.50, priceUsd: 1285.00, priceDate: new Date() },
+      { product: 'Gasoline', region: 'Europe', priceEur: 987.30, priceUsd: 1082.50, priceDate: new Date() },
+      { product: 'Jet Fuel', region: 'Europe', priceEur: 1043.20, priceUsd: 1144.00, priceDate: new Date() },
+      { product: 'LNG', region: 'Global', priceEur: 19.86, priceUsd: 21.75, priceDate: new Date() },
+      { product: 'Brent Crude', region: 'Global', priceEur: 752.40, priceUsd: 825.00, priceDate: new Date() },
     ];
-    
-    for (const p of prices) {
-      await this.pricesService.create(p);
-    }
-    
-    return { message: 'Seeded', count: prices.length };
+    return await this.pricesService.uploadPrices(priceData, null as any);
   }
+
 }

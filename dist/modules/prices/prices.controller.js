@@ -18,14 +18,7 @@ const swagger_1 = require("@nestjs/swagger");
 const prices_service_1 = require("./prices.service");
 const price_query_dto_1 = require("./dto/price-query.dto");
 const auth_guard_1 = require("../../common/guards/auth.guard");
-const roles_guard_1 = require("../../common/guards/roles.guard");
-const plan_guard_1 = require("../../common/guards/plan.guard");
-const roles_decorator_1 = require("../../common/decorators/roles.decorator");
-const plan_required_decorator_1 = require("../../common/decorators/plan-required.decorator");
-const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
-const user_entity_1 = require("../users/entities/user.entity");
 const fuel_price_entity_1 = require("./entities/fuel-price.entity");
-const user_entity_2 = require("../users/entities/user.entity");
 let PricesController = class PricesController {
     pricesService;
     constructor(pricesService) {
@@ -36,7 +29,19 @@ let PricesController = class PricesController {
     async getHistory(query) { return this.pricesService.getHistory(query); }
     async getByProduct(product) { return this.pricesService.getByProduct(product); }
     async getByRegion(region) { return this.pricesService.getByRegion(region); }
-    async uploadPrices(prices, user) { return this.pricesService.uploadPrices(prices, user.id); }
+    async seed() {
+        const prices = [
+            { product: 'Diesel', region: 'Europe', priceEur: 1171.50, priceUsd: 1285.00 },
+            { product: 'Gasoline', region: 'Europe', priceEur: 987.30, priceUsd: 1082.50 },
+            { product: 'Jet Fuel', region: 'Europe', priceEur: 1043.20, priceUsd: 1144.00 },
+            { product: 'LNG', region: 'Global', priceEur: 19.86, priceUsd: 21.75 },
+            { product: 'Brent Crude', region: 'Global', priceEur: 752.40, priceUsd: 825.00 },
+        ];
+        for (const p of prices) {
+            await this.pricesService.create(p);
+        }
+        return { message: 'Seeded', count: prices.length };
+    }
 };
 exports.PricesController = PricesController;
 __decorate([
@@ -55,10 +60,9 @@ __decorate([
 ], PricesController.prototype, "getBest", null);
 __decorate([
     (0, common_1.Get)('history'),
-    (0, common_1.UseGuards)(auth_guard_1.AuthGuard, plan_guard_1.PlanGuard),
-    (0, plan_required_decorator_1.PlanRequired)('particular'),
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Price history (auth required)' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Price history' }),
     __param(0, (0, common_1.Query)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [price_query_dto_1.PriceHistoryQueryDto]),
@@ -66,10 +70,9 @@ __decorate([
 ], PricesController.prototype, "getHistory", null);
 __decorate([
     (0, common_1.Get)('product/:product'),
-    (0, common_1.UseGuards)(auth_guard_1.AuthGuard, plan_guard_1.PlanGuard),
-    (0, plan_required_decorator_1.PlanRequired)('particular'),
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Prices by product (auth required)' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Prices by product' }),
     __param(0, (0, common_1.Param)('product')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -77,27 +80,20 @@ __decorate([
 ], PricesController.prototype, "getByProduct", null);
 __decorate([
     (0, common_1.Get)('region/:region'),
-    (0, common_1.UseGuards)(auth_guard_1.AuthGuard, plan_guard_1.PlanGuard),
-    (0, plan_required_decorator_1.PlanRequired)('particular'),
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Prices by region (auth required)' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Prices by region' }),
     __param(0, (0, common_1.Param)('region')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], PricesController.prototype, "getByRegion", null);
 __decorate([
-    (0, common_1.Post)('admin/upload'),
-    (0, common_1.UseGuards)(auth_guard_1.AuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.ADMIN),
-    (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: '[Admin] Upload prices' }),
-    __param(0, (0, common_1.Body)()),
-    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    (0, common_1.Get)('seed'),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Array, user_entity_2.User]),
+    __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
-], PricesController.prototype, "uploadPrices", null);
+], PricesController.prototype, "seed", null);
 exports.PricesController = PricesController = __decorate([
     (0, swagger_1.ApiTags)('Prices'),
     (0, common_1.Controller)('prices'),
