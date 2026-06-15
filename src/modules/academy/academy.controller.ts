@@ -79,6 +79,11 @@ export class AcademyController {
     return { deleted: true };
   }
 
+  @Get('eco-academy-test')
+  async ecoAcademyTest() {
+    return { status: 'OK', message: 'EcoAcademy code reached Railway!' };
+  }
+
   // ========== ECO-ACADEMY ENDPOINTS ==========
 
   @Get('eco-academy/pills')
