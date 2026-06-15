@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AcademyController } from './academy.controller';
+import { EcoAcademyController } from './eco-academy.controller';
 import { AcademyService } from './academy.service';
 import { AcademyContent } from './entities/content.entity';
 import { EcoPill } from './entities/eco-pill.entity';
@@ -26,7 +27,7 @@ import { UsersModule } from '../users/users.module';
     ]),
     UsersModule,
   ],
-  controllers: [AcademyController],
+  controllers: [AcademyController, EcoAcademyController],
   providers: [AcademyService],
   exports: [AcademyService],
 })

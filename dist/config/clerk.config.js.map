@@ -1,1 +1,0 @@
-{"version":3,"file":"clerk.config.js","sourceRoot":"","sources":["../../src/config/clerk.config.ts"],"names":[],"mappings":";;AAAA,2CAA4C;AAE5C,kBAAe,IAAA,mBAAU,EAAC,OAAO,EAAE,GAAG,EAAE,CAAC,CAAC;IACxC,SAAS,EAAE,OAAO,CAAC,GAAG,CAAC,gBAAgB,IAAI,EAAE;IAC7C,cAAc,EAAE,OAAO,CAAC,GAAG,CAAC,qBAAqB,IAAI,EAAE;IACvD,aAAa,EAAE,OAAO,CAAC,GAAG,CAAC,oBAAoB,IAAI,EAAE;CACtD,CAAC,CAAC,CAAC"}
