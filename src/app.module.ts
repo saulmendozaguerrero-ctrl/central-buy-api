@@ -26,6 +26,11 @@ import { Consultation } from './modules/consultations/entities/consultation.enti
 import { Consultant } from './modules/consultations/entities/consultant.entity';
 import { PriceConfig } from './modules/configurator/entities/price-config.entity';
 import { AcademyContent } from './modules/academy/entities/content.entity';
+import { EcoPill } from './modules/academy/entities/eco-pill.entity';
+import { EcoQuiz } from './modules/academy/entities/eco-quiz.entity';
+import { EcoQuizAttempt } from './modules/academy/entities/eco-quiz-attempt.entity';
+import { EcoProgress } from './modules/academy/entities/eco-progress.entity';
+import { EcoCertificate } from './modules/academy/entities/eco-certificate.entity';
 import { MarketplaceListing } from './modules/marketplace/entities/listing.entity';
 
 // Feature Modules
@@ -87,6 +92,11 @@ import { AppService } from './app.service';
           Consultant,
           PriceConfig,
           AcademyContent,
+          EcoPill,
+          EcoQuiz,
+          EcoQuizAttempt,
+          EcoProgress,
+          EcoCertificate,
           MarketplaceListing,
         ],
         synchronize: true,
@@ -118,7 +128,7 @@ import { AppService } from './app.service';
     AcademyModule,
     MarketplaceModule,
     JobsModule,
-  StripeModule,
+    StripeModule,
   ],
   controllers: [AppController],
   providers: [AppService],
