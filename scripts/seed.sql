@@ -149,6 +149,65 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════════════════════════
+-- ECO-ACADEMY PILLS — Learning content for eco-driving education
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+INSERT INTO eco_pills (id, slug, title, excerpt, category, "durationMin", "videoUrl", "imageUrl", difficulty, "accessLevel", "content", published, "createdAt", "updatedAt")
+VALUES
+  ('eco-pill-001', 'eco-driving-basics', 'Eco-Driving Fundamentals', 'Learn the core principles of eco-driving to reduce fuel consumption and emissions', 'eco-driving', 15, NULL, NULL, 'beginner', 'empresa', 'Eco-driving is a technique that combines the principles of ecological and economical driving. Key principles include: smooth acceleration, maintaining steady speeds, proper tire pressure, and reducing idling. These techniques can reduce fuel consumption by 10-15%', true, NOW(), NOW()),
+  ('eco-pill-002', 'acceleration-techniques', 'Smooth Acceleration & Gear Management', 'Master the art of smooth acceleration and optimal gear selection for maximum fuel efficiency', 'eco-driving', 12, NULL, NULL, 'beginner', 'empresa', 'Harsh acceleration is one of the main causes of high fuel consumption. By accelerating gradually and smoothly, you can save up to 20% in fuel costs. Always aim for a steady, gradual increase in speed and plan your gear changes in advance.', true, NOW(), NOW()),
+  ('eco-pill-003', 'speed-maintenance', 'Optimal Speed & Cruise Control', 'Discover how maintaining optimal speeds reduces fuel consumption and improves safety', 'eco-driving', 10, NULL, NULL, 'intermediate', 'empresa', 'Fuel consumption increases exponentially with speed. Driving at 110 km/h instead of 130 km/h can reduce fuel consumption by up to 25%. Using cruise control on highways helps maintain constant speed and reduces unnecessary acceleration and braking.', true, NOW(), NOW()),
+  ('eco-pill-004', 'route-planning', 'Intelligent Route Planning & Idling', 'Plan efficient routes and eliminate unnecessary idling to maximize fuel savings', 'eco-driving', 12, NULL, NULL, 'intermediate', 'empresa', 'Idling (engine running without movement) wastes fuel and produces emissions. Modern vehicles don''t need warm-up time. By planning your route efficiently and using GPS navigation, you can reduce travel time and unnecessary fuel consumption by 15-20%.', true, NOW(), NOW()),
+  ('eco-pill-005', 'vehicle-maintenance', 'Vehicle Maintenance & Tire Pressure', 'Ensure your vehicle is in peak condition for optimal fuel efficiency and safety', 'eco-driving', 14, NULL, NULL, 'advanced', 'empresa', 'Proper vehicle maintenance is crucial for fuel efficiency. Underinflated tires can increase fuel consumption by 3-5%. Regular servicing, clean air filters, and proper wheel alignment all contribute to better fuel economy and lower emissions. Check tire pressure monthly.', true, NOW(), NOW())
+ON CONFLICT (id) DO NOTHING;
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- ECO-ACADEMY QUIZZES — Assessment for each pill
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+INSERT INTO eco_quizzes (id, title, questions, "passingScore", "timeLimit", published, "createdAt", "updatedAt")
+VALUES
+  ('eco-quiz-001', 'Eco-Driving Fundamentals Quiz', 
+   '[{"id":"q1","text":"What percentage of fuel can you save by using eco-driving techniques?","options":[{"id":"opt1","text":"5-10%"},{"id":"opt2","text":"10-15%"},{"id":"opt3","text":"20-25%"},{"id":"opt4","text":"30-35%"}],"correctOptionId":"opt2"},{"id":"q2","text":"Which is the primary benefit of smooth acceleration?","options":[{"id":"opt5","text":"Faster travel time"},{"id":"opt6","text":"Reduced fuel consumption"},{"id":"opt7","text":"Increased vehicle lifespan"},{"id":"opt8","text":"Better handling"}],"correctOptionId":"opt6"}]'::jsonb,
+   70, 10, true, NOW(), NOW()),
+  ('eco-quiz-002', 'Acceleration & Gear Management Quiz',
+   '[{"id":"q3","text":"How much can you save by accelerating smoothly?","options":[{"id":"opt9","text":"5%"},{"id":"opt10","text":"10%"},{"id":"opt11","text":"Up to 20%"},{"id":"opt12","text":"50%"}],"correctOptionId":"opt11"},{"id":"q4","text":"When should you change gears in eco-driving?","options":[{"id":"opt13","text":"At maximum RPM"},{"id":"opt14","text":"As soon as possible"},{"id":"opt15","text":"Plan gear changes in advance"},{"id":"opt16","text":"When the engine sounds loud"}],"correctOptionId":"opt15"}]'::jsonb,
+   70, 10, true, NOW(), NOW()),
+  ('eco-quiz-003', 'Optimal Speed Quiz',
+   '[{"id":"q5","text":"How much fuel can you save by driving at 110 km/h instead of 130 km/h?","options":[{"id":"opt17","text":"5-10%"},{"id":"opt18","text":"15-20%"},{"id":"opt19","text":"Up to 25%"},{"id":"opt20","text":"40%"}],"correctOptionId":"opt19"},{"id":"q6","text":"What is an advantage of using cruise control?","options":[{"id":"opt21","text":"Faster acceleration"},{"id":"opt22","text":"Maintains constant speed"},{"id":"opt23","text":"Improves acceleration"},{"id":"opt24","text":"Reduces engine noise"}],"correctOptionId":"opt22"}]'::jsonb,
+   70, 10, true, NOW(), NOW()),
+  ('eco-quiz-004', 'Route Planning & Idling Quiz',
+   '[{"id":"q7","text":"Do modern vehicles need warm-up time before driving?","options":[{"id":"opt25","text":"Yes, 5 minutes"},{"id":"opt26","text":"Yes, 2-3 minutes"},{"id":"opt27","text":"No, they do not"},{"id":"opt28","text":"Only in winter"}],"correctOptionId":"opt27"},{"id":"q8","text":"What percentage of fuel can be saved by eliminating unnecessary idling?","options":[{"id":"opt29","text":"5-10%"},{"id":"opt30","text":"10-15%"},{"id":"opt31","text":"15-20%"},{"id":"opt32","text":"30-40%"}],"correctOptionId":"opt31"}]'::jsonb,
+   70, 10, true, NOW(), NOW()),
+  ('eco-quiz-005', 'Vehicle Maintenance Quiz',
+   '[{"id":"q9","text":"How much can underinflated tires increase fuel consumption?","options":[{"id":"opt33","text":"1-2%"},{"id":"opt34","text":"3-5%"},{"id":"opt35","text":"10-15%"},{"id":"opt36","text":"20-25%"}],"correctOptionId":"opt34"},{"id":"q10","text":"How often should you check tire pressure?","options":[{"id":"opt37","text":"Weekly"},{"id":"opt38","text":"Monthly"},{"id":"opt39","text":"Quarterly"},{"id":"opt40","text":"Annually"}],"correctOptionId":"opt38"}]'::jsonb,
+   70, 10, true, NOW(), NOW())
+ON CONFLICT (id) DO NOTHING;
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- ECO-QUIZ-PILLS ASSOCIATION — Link quizzes to pills
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+INSERT INTO eco_quiz_pills (quiz_id, pill_id)
+VALUES
+  ('eco-quiz-001', 'eco-pill-001'),
+  ('eco-quiz-002', 'eco-pill-002'),
+  ('eco-quiz-003', 'eco-pill-003'),
+  ('eco-quiz-004', 'eco-pill-004'),
+  ('eco-quiz-005', 'eco-pill-005')
+ON CONFLICT DO NOTHING;
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- ECO PROGRESS — Sample user progress
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+INSERT INTO eco_progress (id, "userId", "completedPills", "completedQuizzes", "totalProgress", "pillsCompleted", "quizzesCompleted", "certificatesEarned", "createdAt", "updatedAt")
+VALUES
+  ('progress-001', 'user-test-002', '["eco-pill-001","eco-pill-002"]'::jsonb, '["eco-quiz-001","eco-quiz-002"]'::jsonb, 40, 2, 2, 2, NOW(), NOW()),
+  ('progress-002', 'user-test-001', '["eco-pill-001"]'::jsonb, '["eco-quiz-001"]'::jsonb, 20, 1, 1, 1, NOW(), NOW())
+ON CONFLICT (id) DO NOTHING;
+
+-- ═══════════════════════════════════════════════════════════════════════════════
 -- VERIFY SEED DATA
 -- ═══════════════════════════════════════════════════════════════════════════════
 
@@ -158,4 +217,7 @@ SELECT 'Seed data loaded successfully!' as status,
        (SELECT COUNT(*) FROM fuel_price) as price_count,
        (SELECT COUNT(*) FROM vehicle) as vehicle_count,
        (SELECT COUNT(*) FROM fuel_log) as fuel_log_count,
-       (SELECT COUNT(*) FROM organization) as organization_count;
+       (SELECT COUNT(*) FROM organization) as organization_count,
+       (SELECT COUNT(*) FROM eco_pills) as eco_pill_count,
+       (SELECT COUNT(*) FROM eco_quizzes) as eco_quiz_count,
+       (SELECT COUNT(*) FROM eco_progress) as eco_progress_count;
