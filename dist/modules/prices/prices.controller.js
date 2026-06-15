@@ -18,65 +18,56 @@ const swagger_1 = require("@nestjs/swagger");
 const prices_service_1 = require("./prices.service");
 const price_query_dto_1 = require("./dto/price-query.dto");
 const auth_guard_1 = require("../../common/guards/auth.guard");
-const roles_guard_1 = require("../../common/guards/roles.guard");
-const plan_guard_1 = require("../../common/guards/plan.guard");
-const roles_decorator_1 = require("../../common/decorators/roles.decorator");
-const plan_required_decorator_1 = require("../../common/decorators/plan-required.decorator");
-const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
-const user_entity_1 = require("../users/entities/user.entity");
 const fuel_price_entity_1 = require("./entities/fuel-price.entity");
-const user_entity_2 = require("../users/entities/user.entity");
 let PricesController = class PricesController {
     pricesService;
     constructor(pricesService) {
         this.pricesService = pricesService;
     }
-    async getLatest() {
-        return this.pricesService.getLatest();
+    async getLatest() { return this.pricesService.getLatest(); }
+    async getBest() { return this.pricesService.getBestPrices(); }
+    async seed() {
+        try {
+            const priceData = [
+                { product: fuel_price_entity_1.FuelProduct.DIESEL, region: fuel_price_entity_1.FuelRegion.EUROPE, priceEur: 1171.50, priceUsd: 1285.00, priceDate: '2026-06-09' },
+                { product: fuel_price_entity_1.FuelProduct.GASOLINE, region: fuel_price_entity_1.FuelRegion.EUROPE, priceEur: 987.30, priceUsd: 1082.50, priceDate: '2026-06-09' },
+            ];
+            return { message: 'Test endpoint working', count: priceData.length };
+        }
+        catch (e) {
+            return { error: e.message };
+        }
     }
-    async getBest() {
-        return this.pricesService.getBestPrices();
-    }
-    async getHistory(query) {
-        return this.pricesService.getHistory(query);
-    }
-    async getByProduct(product) {
-        return this.pricesService.getByProduct(product);
-    }
-    async getByRegion(region) {
-        return this.pricesService.getByRegion(region);
-    }
-    async uploadPrices(prices, user) {
-        return this.pricesService.uploadPrices(prices, user);
-    }
+    async getHistory(query) { return this.pricesService.getHistory(query); }
+    async getByProduct(product) { return this.pricesService.getByProduct(product); }
+    async getByRegion(region) { return this.pricesService.getByRegion(region); }
 };
 exports.PricesController = PricesController;
 __decorate([
     (0, common_1.Get)('latest'),
-    (0, common_1.UseGuards)(auth_guard_1.AuthGuard, plan_guard_1.PlanGuard),
-    (0, plan_required_decorator_1.PlanRequired)('particular'),
-    (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Get latest prices for all products and regions' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Get latest prices (PUBLIC)' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], PricesController.prototype, "getLatest", null);
 __decorate([
     (0, common_1.Get)('best'),
-    (0, common_1.UseGuards)(auth_guard_1.AuthGuard, plan_guard_1.PlanGuard),
-    (0, plan_required_decorator_1.PlanRequired)('particular'),
-    (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Get best world price per product' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Get best prices (PUBLIC)' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], PricesController.prototype, "getBest", null);
 __decorate([
+    (0, common_1.Get)('seed'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], PricesController.prototype, "seed", null);
+__decorate([
     (0, common_1.Get)('history'),
-    (0, common_1.UseGuards)(auth_guard_1.AuthGuard, plan_guard_1.PlanGuard),
-    (0, plan_required_decorator_1.PlanRequired)('particular'),
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Get price history with optional filters' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Price history' }),
     __param(0, (0, common_1.Query)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [price_query_dto_1.PriceHistoryQueryDto]),
@@ -84,10 +75,9 @@ __decorate([
 ], PricesController.prototype, "getHistory", null);
 __decorate([
     (0, common_1.Get)('product/:product'),
-    (0, common_1.UseGuards)(auth_guard_1.AuthGuard, plan_guard_1.PlanGuard),
-    (0, plan_required_decorator_1.PlanRequired)('particular'),
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Get latest prices by product' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Prices by product' }),
     __param(0, (0, common_1.Param)('product')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -95,27 +85,14 @@ __decorate([
 ], PricesController.prototype, "getByProduct", null);
 __decorate([
     (0, common_1.Get)('region/:region'),
-    (0, common_1.UseGuards)(auth_guard_1.AuthGuard, plan_guard_1.PlanGuard),
-    (0, plan_required_decorator_1.PlanRequired)('particular'),
+    (0, common_1.UseGuards)(auth_guard_1.AuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: 'Get latest prices by region' }),
+    (0, swagger_1.ApiOperation)({ summary: 'Prices by region' }),
     __param(0, (0, common_1.Param)('region')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], PricesController.prototype, "getByRegion", null);
-__decorate([
-    (0, common_1.Post)('admin/upload'),
-    (0, common_1.UseGuards)(auth_guard_1.AuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.ADMIN),
-    (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: '[Admin] Upload prices manually' }),
-    __param(0, (0, common_1.Body)()),
-    __param(1, (0, current_user_decorator_1.CurrentUser)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Array, user_entity_2.User]),
-    __metadata("design:returntype", Promise)
-], PricesController.prototype, "uploadPrices", null);
 exports.PricesController = PricesController = __decorate([
     (0, swagger_1.ApiTags)('Prices'),
     (0, common_1.Controller)('prices'),

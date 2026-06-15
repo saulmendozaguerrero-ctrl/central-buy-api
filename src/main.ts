@@ -70,6 +70,7 @@ async function bootstrap() {
     },
   });
 
+
   await app.listen(port);
 
   const logger = new Logger('Bootstrap');
