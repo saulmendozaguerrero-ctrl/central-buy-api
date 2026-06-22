@@ -51,6 +51,7 @@ import { StripeModule } from './stripe/stripe.module';
 import { EmailModule } from './modules/email/email.module';
 import { SmsModule } from './modules/sms/sms.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { LLMModule } from './modules/llm/llm.module';
 
 // App
 import { AppController } from './app.controller';
@@ -122,6 +123,7 @@ import { ConsultationsAliasController, PricesAliasController, WebhooksAliasContr
     }),
 
     // ─── Feature Modules ─────────────────────────────────────────────────────
+    LLMModule,
     AuthModule,
     UsersModule,
     SubscriptionsModule,
