@@ -54,7 +54,7 @@ import { ReportsModule } from './modules/reports/reports.module';
 // App
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TestController } from './test.controller';}
+import { TestController } from './test.controller';
 
 @Module({
   imports: [
