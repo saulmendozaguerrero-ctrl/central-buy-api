@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Query, Body, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { AuthGuard } from '../../common/guards/auth.guard';
@@ -40,5 +40,11 @@ export class AdminController {
     @Query('limit') limit?: number,
   ) {
     return this.adminService.getSubscriptions(page, limit);
+  }
+
+  @Post('settings')
+  @ApiOperation({ summary: '[Admin] Update app settings' })
+  async updateSettings(@Body() settings: Record<string, any>) {
+    return this.adminService.updateSettings(settings);
   }
 }

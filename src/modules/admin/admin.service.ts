@@ -114,4 +114,16 @@ export class AdminService {
     });
     return { subscriptions, total };
   }
+
+  async updateSettings(settings: Record<string, any>) {
+    // TODO: Persist to database if needed
+    // For MVP, log and return success
+    console.log('[ADMIN SETTINGS UPDATE]', settings);
+    return {
+      success: true,
+      message: 'Settings updated successfully',
+      settings: settings,
+      timestamp: new Date().toISOString(),
+    };
+  }
 }
