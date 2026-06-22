@@ -15,10 +15,11 @@ export class AppController {
   }
 
   @Get()
-  root(): { name: string; docs: string } {
+  root(): { name: string; docs: string; updated: string } {
     return {
       name: 'Central Buy API',
       docs: '/api/docs',
+      updated: '2026-06-22T15:00:00Z',
     };
   }
 }
