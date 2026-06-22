@@ -15,11 +15,18 @@ export class AppController {
   }
 
   @Get()
-  root(): { name: string; docs: string; updated: string } {
+  root(): { name: string; docs: string; updated: string; hasConsultations: boolean } {
     return {
       name: 'Central Buy API',
       docs: '/api/docs',
       updated: '2026-06-22T15:00:00Z',
+      hasConsultations: true,
     };
+  }
+
+  @Get('test-endpoint')
+  @ApiOperation({ summary: 'Test endpoint to verify routing' })
+  test(): { message: string } {
+    return { message: 'Routing is working!' };
   }
 }
