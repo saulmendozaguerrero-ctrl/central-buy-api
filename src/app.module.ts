@@ -47,6 +47,7 @@ import { AcademyModule } from './modules/academy/academy.module';
 import { MarketplaceModule } from './modules/marketplace/marketplace.module';
 import { JobsModule } from './jobs/jobs.module';
 import { StripeModule } from './stripe/stripe.module';
+import { EmailModule } from './modules/email/email.module';
 
 // App
 import { AppController } from './app.controller';
@@ -121,6 +122,7 @@ import { AppService } from './app.service';
     SubscriptionsModule,
     PricesModule,
     ConfiguratorModule,
+    EmailModule,
     ConsultationsModule,
     FleetModule,
     OrganizationsModule,
