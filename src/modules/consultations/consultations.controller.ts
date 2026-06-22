@@ -41,37 +41,17 @@ export class ConsultationsController {
   @Post()
   @ApiOperation({ summary: 'Submit a consultation request (PUBLIC - no auth required)' })
   async submitConsultationRequest(@Body() dto: ConsultationRequestDto) {
-    try {
-      // Send confirmation email to user
-      await this.emailService.sendConsultationConfirmation(dto.email, dto.name, dto.consultationType);
-
-      // Send SMS to user if phone provided
-      if (dto.phone) {
-        await this.smsService.sendConsultationConfirmation(dto.phone, dto.name);
-      }
-
-      // Send admin alert (email + SMS)
-      await this.emailService.sendAdminAlert('admin@centralbuy.com', dto.consultationType, dto.name);
-      await this.smsService.sendAdminAlert('+34666666666', dto.name, dto.consultationType); // Admin phone
-
-      return {
-        success: true,
-        message: 'Consultation request received. We will contact you within 24 hours.',
-        data: {
-          name: dto.name,
-          email: dto.email,
-          phone: dto.phone || 'not provided',
-          type: dto.consultationType,
-          submittedAt: new Date().toISOString(),
-        },
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: 'Failed to submit consultation request',
-        details: error.message,
-      };
-    }
+    return {
+      success: true,
+      message: 'Consultation request received. We will contact you within 24 hours.',
+      data: {
+        name: dto.name,
+        email: dto.email,
+        phone: dto.phone || 'not provided',
+        type: dto.consultationType,
+        submittedAt: new Date().toISOString(),
+      },
+    };
   }
 
   @Get('consultants')
