@@ -1,51 +1,27 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { PLAN_KEY } from '../decorators/plan-required.decorator';
-import { Subscription, SubscriptionStatus } from '../../modules/subscriptions/entities/subscription.entity';
 
 @Injectable()
 export class PlanGuard implements CanActivate {
-  constructor(
-    private readonly reflector: Reflector,
-    @InjectRepository(Subscription)
-    private readonly subscriptionRepo: Repository<Subscription>,
-  ) {}
+  constructor(private reflector: Reflector) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requiredPlan = this.reflector.getAllAndOverride<string>(PLAN_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-
-    if (!requiredPlan) return true;
-
-    const { user } = context.switchToHttp().getRequest();
-
-    if (!user) throw new ForbiddenException('Authentication required');
-
-    const subscription = await this.subscriptionRepo.findOne({
-      where: { userId: user.id },
-      order: { createdAt: 'DESC' },
-    });
-
-    const activeStatuses: SubscriptionStatus[] = [
-      SubscriptionStatus.ACTIVE,
-      SubscriptionStatus.TRIALING,
-    ];
-
-    if (!subscription || !activeStatuses.includes(subscription.status)) {
-      throw new ForbiddenException('Active subscription required');
+  canActivate(context: ExecutionContext): boolean {
+    const requiredPlan = this.reflector.get<string>('plan', context.getHandler());
+    if (!requiredPlan) {
+      return true; // Si no hay plan requerido, permitir
     }
 
-    if (requiredPlan === 'empresa' && subscription.plan !== 'empresa') {
-      throw new ForbiddenException('Empresa plan required for this feature');
+    const request = context.switchToHttp().getRequest();
+    const user = request.user;
+
+    if (!user) {
+      throw new ForbiddenException('User not authenticated');
+    }
+
+    if (user.planType !== requiredPlan) {
+      throw new ForbiddenException(
+        `This feature requires "${requiredPlan}" plan. Your current plan: ${user.planType}`,
+      );
     }
 
     return true;
