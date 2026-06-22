@@ -24,9 +24,13 @@ export class AppController {
     };
   }
 
-  @Get('test-endpoint')
-  @ApiOperation({ summary: 'Test endpoint to verify routing' })
-  test(): { message: string } {
-    return { message: 'Routing is working!' };
+  @Post('test-consultation')
+  @ApiOperation({ summary: 'Test consultation endpoint in app.controller' })
+  testConsultation() {
+    return {
+      success: true,
+      message: 'Test consultation from AppController',
+      timestamp: new Date().toISOString(),
+    };
   }
 }
