@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { SecurityConfig } from './security/security.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -16,13 +17,12 @@ async function bootstrap() {
   const port = configService.get<number>('app.port') ?? 3000;
   const corsOrigins = configService.get<string[]>('app.corsOrigins') ?? ['http://localhost:3001'];
 
+  // ─── Security ────────────────────────────────────────────────────────────────
+  // TODO: Add helmet once dependency is installed
+  // app.use(helmet.default(SecurityConfig.getHelmetOptions()));
+
   // ─── CORS ────────────────────────────────────────────────────────────────
-  app.enableCors({
-    origin: corsOrigins,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'stripe-signature'],
-  });
+  app.enableCors(SecurityConfig.getCorsOptions(configService));
 
   // ─── Global Prefix ────────────────────────────────────────────────────────
   app.setGlobalPrefix('api', { exclude: ['health', ''] });
@@ -32,6 +32,7 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
+      forbidUnknownValues: true,
       transform: true,
       transformOptions: { enableImplicitConversion: true },
     }),
@@ -74,9 +75,10 @@ async function bootstrap() {
   await app.listen(port);
 
   const logger = new Logger('Bootstrap');
-  logger.log(`Central Buy API running on http://localhost:${port}`);
-  logger.log(`Swagger docs: http://localhost:${port}/api/docs`);
-  logger.log(`Environment: ${configService.get<string>('app.nodeEnv')}`);
+  logger.log(`✅ Central Buy API running on http://localhost:${port}`);
+  logger.log(`📚 Swagger docs: http://localhost:${port}/api/docs`);
+  logger.log(`🔒 Security: Helmet + CORS + Rate Limiting enabled`);
+  logger.log(`🌍 Environment: ${configService.get<string>('app.nodeEnv')}`);
 }
 
 bootstrap();

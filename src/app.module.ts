@@ -48,6 +48,8 @@ import { MarketplaceModule } from './modules/marketplace/marketplace.module';
 import { JobsModule } from './jobs/jobs.module';
 import { StripeModule } from './stripe/stripe.module';
 import { EmailModule } from './modules/email/email.module';
+import { SmsModule } from './modules/sms/sms.module';
+import { ReportsModule } from './modules/reports/reports.module';
 
 // App
 import { AppController } from './app.controller';
@@ -123,6 +125,8 @@ import { AppService } from './app.service';
     PricesModule,
     ConfiguratorModule,
     EmailModule,
+    SmsModule,
+    ReportsModule,
     ConsultationsModule,
     FleetModule,
     OrganizationsModule,

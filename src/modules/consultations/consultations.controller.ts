@@ -17,6 +17,7 @@ import { PlanRequired } from '../../common/decorators/plan-required.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
 import { EmailService } from '../email/email.service';
+import { SmsService } from '../sms/sms.service';
 
 interface ConsultationRequestDto {
   name: string;
@@ -34,6 +35,7 @@ export class ConsultationsController {
   constructor(
     private readonly consultationsService: ConsultationsService,
     private readonly emailService: EmailService,
+    private readonly smsService: SmsService,
   ) {}
 
   @Post()
@@ -43,8 +45,14 @@ export class ConsultationsController {
       // Send confirmation email to user
       await this.emailService.sendConsultationConfirmation(dto.email, dto.name, dto.consultationType);
 
-      // Send admin alert
+      // Send SMS to user if phone provided
+      if (dto.phone) {
+        await this.smsService.sendConsultationConfirmation(dto.phone, dto.name);
+      }
+
+      // Send admin alert (email + SMS)
       await this.emailService.sendAdminAlert('admin@centralbuy.com', dto.consultationType, dto.name);
+      await this.smsService.sendAdminAlert('+34666666666', dto.name, dto.consultationType); // Admin phone
 
       return {
         success: true,
@@ -52,6 +60,7 @@ export class ConsultationsController {
         data: {
           name: dto.name,
           email: dto.email,
+          phone: dto.phone || 'not provided',
           type: dto.consultationType,
           submittedAt: new Date().toISOString(),
         },
