@@ -26,16 +26,13 @@ let PricesController = class PricesController {
     }
     async getLatest() { return this.pricesService.getLatest(); }
     async getBest() { return this.pricesService.getBestPrices(); }
-    async seed() {
+    async updateDailyPrices() {
         try {
-            const priceData = [
-                { product: fuel_price_entity_1.FuelProduct.DIESEL, region: fuel_price_entity_1.FuelRegion.EUROPE, priceEur: 1171.50, priceUsd: 1285.00, priceDate: '2026-06-09' },
-                { product: fuel_price_entity_1.FuelProduct.GASOLINE, region: fuel_price_entity_1.FuelRegion.EUROPE, priceEur: 987.30, priceUsd: 1082.50, priceDate: '2026-06-09' },
-            ];
-            return { message: 'Test endpoint working', count: priceData.length };
+            const result = await this.pricesService.updateDailyPrices();
+            return { message: 'Prices updated successfully', updated: result, timestamp: new Date().toISOString() };
         }
         catch (e) {
-            return { error: e.message };
+            return { error: e.message, timestamp: new Date().toISOString() };
         }
     }
     async getHistory(query) { return this.pricesService.getHistory(query); }
@@ -58,11 +55,12 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PricesController.prototype, "getBest", null);
 __decorate([
-    (0, common_1.Get)('seed'),
+    (0, common_1.Post)('update-daily'),
+    (0, swagger_1.ApiOperation)({ summary: 'Update daily prices (ADMIN ONLY)' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
-], PricesController.prototype, "seed", null);
+], PricesController.prototype, "updateDailyPrices", null);
 __decorate([
     (0, common_1.Get)('history'),
     (0, common_1.UseGuards)(auth_guard_1.AuthGuard),

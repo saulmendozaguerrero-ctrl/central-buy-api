@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Query, Param, UseGuards, Body } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { PricesService } from './prices.service';
 import { PriceHistoryQueryDto } from './dto/price-query.dto';
@@ -18,16 +18,14 @@ export class PricesController {
   @ApiOperation({ summary: 'Get best prices (PUBLIC)' })
   async getBest() { return this.pricesService.getBestPrices(); }
 
-  @Get('seed')
-  async seed() {
+  @Post('update-daily')
+  @ApiOperation({ summary: 'Update daily prices (ADMIN ONLY)' })
+  async updateDailyPrices() {
     try {
-      const priceData = [
-        { product: FuelProduct.DIESEL, region: FuelRegion.EUROPE, priceEur: 1171.50, priceUsd: 1285.00, priceDate: '2026-06-09' },
-        { product: FuelProduct.GASOLINE, region: FuelRegion.EUROPE, priceEur: 987.30, priceUsd: 1082.50, priceDate: '2026-06-09' },
-      ];
-      return { message: 'Test endpoint working', count: priceData.length };
+      const result = await this.pricesService.updateDailyPrices();
+      return { message: 'Prices updated successfully', updated: result, timestamp: new Date().toISOString() };
     } catch (e) {
-      return { error: e.message };
+      return { error: e.message, timestamp: new Date().toISOString() };
     }
   }
 

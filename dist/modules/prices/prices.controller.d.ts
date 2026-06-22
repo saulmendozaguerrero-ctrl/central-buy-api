@@ -6,14 +6,16 @@ export declare class PricesController {
     constructor(pricesService: PricesService);
     getLatest(): Promise<import("./entities/fuel-price.entity").FuelPrice[]>;
     getBest(): Promise<Record<string, import("./entities/fuel-price.entity").FuelPrice>>;
-    seed(): Promise<{
+    updateDailyPrices(): Promise<{
         message: string;
-        count: number;
+        updated: number;
+        timestamp: string;
         error?: undefined;
     } | {
         error: any;
+        timestamp: string;
         message?: undefined;
-        count?: undefined;
+        updated?: undefined;
     }>;
     getHistory(query: PriceHistoryQueryDto): Promise<import("./entities/fuel-price.entity").FuelPrice[]>;
     getByProduct(product: FuelProduct): Promise<import("./entities/fuel-price.entity").FuelPrice[]>;
