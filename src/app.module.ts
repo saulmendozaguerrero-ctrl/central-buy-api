@@ -54,7 +54,7 @@ import { ReportsModule } from './modules/reports/reports.module';
 // App
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TestController } from './test.controller';
+import { ConsultationsAliasController, PricesAliasController, WebhooksAliasController } from './test.controller';
 
 @Module({
   imports: [
@@ -137,7 +137,7 @@ import { TestController } from './test.controller';
     SmsModule,
     ReportsModule,
   ],
-  controllers: [AppController, TestController],
+  controllers: [AppController, ConsultationsAliasController, PricesAliasController, WebhooksAliasController],
   providers: [AppService],
 })
 export class AppModule {}
