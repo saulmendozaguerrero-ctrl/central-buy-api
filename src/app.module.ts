@@ -14,6 +14,7 @@ import clerkConfig from './config/clerk.config';
 
 // Entities
 import { User } from './modules/users/entities/user.entity';
+import { UserProfile } from './modules/users/entities/user-profile.entity';
 import { Subscription } from './modules/subscriptions/entities/subscription.entity';
 import { Organization } from './modules/organizations/entities/organization.entity';
 import { OrgMember } from './modules/organizations/entities/org-member.entity';
@@ -102,6 +103,7 @@ import { ConsultationsAliasController, PricesAliasController, WebhooksAliasContr
           EcoProgress,
           EcoCertificate,
           MarketplaceListing,
+          UserProfile,
         ],
         synchronize: true,
         logging: config.get<string>('app.nodeEnv') === 'development',

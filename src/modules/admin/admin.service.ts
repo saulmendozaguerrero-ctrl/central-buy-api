@@ -1,129 +1,220 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import dayjs from 'dayjs';
-import { User } from '../users/entities/user.entity';
-import { Subscription, SubscriptionStatus, SubscriptionPlan } from '../subscriptions/entities/subscription.entity';
-
-export interface AdminMetrics {
-  totalUsers: number;
-  activeSubscriptions: number;
-  trialingSubscriptions: number;
-  canceledThisMonth: number;
-  mrr: number;
-  mrrParticular: number;
-  mrrEmpresa: number;
-  churnRate: number;
-  newUsersThisMonth: number;
-  newUsersLastMonth: number;
-  ltv: number;
-}
+import { Repository, MoreThan } from 'typeorm';
+import { User, PlanType } from '../users/entities/user.entity';
+import { UserProfile } from '../users/entities/user-profile.entity';
 
 @Injectable()
 export class AdminService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepo: Repository<User>,
-    @InjectRepository(Subscription)
-    private readonly subscriptionRepo: Repository<Subscription>,
+    private userRepo: Repository<User>,
+    @InjectRepository(UserProfile)
+    private profileRepo: Repository<UserProfile>,
   ) {}
 
-  async getMetrics(): Promise<AdminMetrics> {
-    const now = dayjs();
-    const monthStart = now.startOf('month').toDate();
-    const lastMonthStart = now.subtract(1, 'month').startOf('month').toDate();
-    const lastMonthEnd = now.subtract(1, 'month').endOf('month').toDate();
-
-    const [
-      totalUsers,
-      activeSubs,
-      trialingSubs,
-      canceledThisMonth,
-      newUsersThisMonth,
-      newUsersLastMonth,
-    ] = await Promise.all([
-      this.userRepo.count(),
-      this.subscriptionRepo.count({ where: { status: SubscriptionStatus.ACTIVE } }),
-      this.subscriptionRepo.count({ where: { status: SubscriptionStatus.TRIALING } }),
-      this.subscriptionRepo
-        .createQueryBuilder('s')
-        .where('s.status = :status', { status: SubscriptionStatus.CANCELED })
-        .andWhere('s.canceledAt >= :start', { start: monthStart })
-        .getCount(),
-      this.userRepo
-        .createQueryBuilder('u')
-        .where('u.createdAt >= :start', { start: monthStart })
-        .getCount(),
-      this.userRepo
-        .createQueryBuilder('u')
-        .where('u.createdAt >= :start AND u.createdAt <= :end', {
-          start: lastMonthStart,
-          end: lastMonthEnd,
-        })
-        .getCount(),
-    ]);
-
-    const allActiveSubs = await this.subscriptionRepo.find({
-      where: { status: SubscriptionStatus.ACTIVE },
+  async getDashboardStats() {
+    const totalUsers = await this.userRepo.count();
+    const particularUsers = await this.userRepo.count({
+      where: { planType: PlanType.PARTICULAR },
+    });
+    const empresaUsers = await this.userRepo.count({
+      where: { planType: PlanType.EMPRESA },
     });
 
-    const mrrParticular =
-      allActiveSubs.filter((s) => s.plan === SubscriptionPlan.PARTICULAR).length * 4.99;
-    const mrrEmpresa =
-      allActiveSubs.filter((s) => s.plan === SubscriptionPlan.EMPRESA).length * 9.99;
-    const mrr = Math.round((mrrParticular + mrrEmpresa) * 100) / 100;
-
-    const churnRate =
-      activeSubs > 0
-        ? Math.round((canceledThisMonth / activeSubs) * 100 * 100) / 100
-        : 0;
-
-    const ltv = churnRate > 0 ? Math.round((mrr / activeSubs / (churnRate / 100)) * 100) / 100 : 0;
+    const completedOnboarding = await this.profileRepo.count({
+      where: { onboardingCompleted: true },
+    });
 
     return {
-      totalUsers,
-      activeSubscriptions: activeSubs,
-      trialingSubscriptions: trialingSubs,
-      canceledThisMonth,
-      mrr,
-      mrrParticular: Math.round(mrrParticular * 100) / 100,
-      mrrEmpresa: Math.round(mrrEmpresa * 100) / 100,
-      churnRate,
-      newUsersThisMonth,
-      newUsersLastMonth,
-      ltv,
+      success: true,
+      data: {
+        totalUsers,
+        byPlan: {
+          particular: particularUsers,
+          empresa: empresaUsers,
+        },
+        onboarding: {
+          completed: completedOnboarding,
+          pending: totalUsers - completedOnboarding,
+          completionRate: `${((completedOnboarding / totalUsers) * 100).toFixed(1)}%`,
+        },
+        timestamp: new Date().toISOString(),
+      },
     };
   }
 
-  async getUsers(page = 1, limit = 20): Promise<{ users: User[]; total: number }> {
+  async getAllUsers(page: number = 1, limit: number = 20) {
     const [users, total] = await this.userRepo.findAndCount({
-      relations: {},
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
     });
-    return { users, total };
-  }
 
-  async getSubscriptions(page = 1, limit = 20) {
-    const [subscriptions, total] = await this.subscriptionRepo.findAndCount({
-      relations: { user: true },
-      order: { createdAt: 'DESC' },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
-    return { subscriptions, total };
-  }
+    const enriched = await Promise.all(
+      users.map(async (user) => {
+        const profile = await this.profileRepo.findOne({
+          where: { userId: user.id },
+        });
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          planType: user.planType,
+          onboardingCompleted: profile?.onboardingCompleted || false,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        };
+      }),
+    );
 
-  async updateSettings(settings: Record<string, any>) {
-    // TODO: Persist to database if needed
-    // For MVP, log and return success
-    console.log('[ADMIN SETTINGS UPDATE]', settings);
     return {
       success: true,
-      message: 'Settings updated successfully',
-      settings: settings,
-      timestamp: new Date().toISOString(),
+      data: {
+        users: enriched,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit),
+        },
+      },
+    };
+  }
+
+  async getUsersByPlan() {
+    const particular = await this.userRepo.count({
+      where: { planType: PlanType.PARTICULAR },
+    });
+    const empresa = await this.userRepo.count({
+      where: { planType: PlanType.EMPRESA },
+    });
+
+    const total = particular + empresa;
+
+    return {
+      success: true,
+      data: {
+        particular: {
+          count: particular,
+          percentage: `${((particular / total) * 100).toFixed(1)}%`,
+        },
+        empresa: {
+          count: empresa,
+          percentage: `${((empresa / total) * 100).toFixed(1)}%`,
+        },
+        total,
+      },
+    };
+  }
+
+  async getUsageReport(days: number = 30) {
+    const sinceDate = new Date();
+    sinceDate.setDate(sinceDate.getDate() - days);
+
+    const newUsers = await this.userRepo.count({
+      where: { createdAt: MoreThan(sinceDate) },
+    });
+
+    const particularNewUsers = await this.userRepo.count({
+      where: {
+        planType: PlanType.PARTICULAR,
+        createdAt: MoreThan(sinceDate),
+      },
+    });
+
+    const empresaNewUsers = await this.userRepo.count({
+      where: {
+        planType: PlanType.EMPRESA,
+        createdAt: MoreThan(sinceDate),
+      },
+    });
+
+    const totalUsers = await this.userRepo.count();
+
+    return {
+      success: true,
+      data: {
+        period: `Last ${days} days`,
+        newUsers,
+        byPlan: {
+          particular: particularNewUsers,
+          empresa: empresaNewUsers,
+        },
+        totalActiveUsers: totalUsers,
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+
+  async getRevenueReport() {
+    const empresaUsers = await this.userRepo.count({
+      where: { planType: PlanType.EMPRESA },
+    });
+    const particularUsers = await this.userRepo.count({
+      where: { planType: PlanType.PARTICULAR },
+    });
+
+    // Mock revenue (€9.99/mes empresa, €4.99/mes particular)
+    const mockEmpresaMRR = empresaUsers * 9.99;
+    const mockParticularMRR = particularUsers * 4.99;
+    const totalMRR = mockEmpresaMRR + mockParticularMRR;
+
+    return {
+      success: true,
+      data: {
+        mrrByPlan: {
+          empresa: `€${mockEmpresaMRR.toFixed(2)}`,
+          particular: `€${mockParticularMRR.toFixed(2)}`,
+        },
+        totalMRR: `€${totalMRR.toFixed(2)}`,
+        users: {
+          empresa: empresaUsers,
+          particular: particularUsers,
+        },
+        note: 'Mock data based on plan types. Connect Stripe for real revenue.',
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+
+  async getOnboardingReport() {
+    const total = await this.profileRepo.count();
+    const completed = await this.profileRepo.count({
+      where: { onboardingCompleted: true },
+    });
+
+    const particularProfiles = await this.profileRepo
+      .createQueryBuilder('p')
+      .leftJoin(User, 'u', 'u.id = p.userId')
+      .where('u.planType = :plan', { plan: PlanType.PARTICULAR })
+      .getCount();
+
+    const particularCompleted = await this.profileRepo
+      .createQueryBuilder('p')
+      .leftJoin(User, 'u', 'u.id = p.userId')
+      .where('u.planType = :plan', { plan: PlanType.PARTICULAR })
+      .andWhere('p.onboardingCompleted = true')
+      .getCount();
+
+    return {
+      success: true,
+      data: {
+        overall: {
+          total,
+          completed,
+          pending: total - completed,
+          completionRate: `${((completed / total) * 100).toFixed(1)}%`,
+        },
+        byPlan: {
+          particular: {
+            total: particularProfiles,
+            completed: particularCompleted,
+            completionRate: `${((particularCompleted / particularProfiles) * 100).toFixed(1)}%`,
+          },
+        },
+        timestamp: new Date().toISOString(),
+      },
     };
   }
 }
