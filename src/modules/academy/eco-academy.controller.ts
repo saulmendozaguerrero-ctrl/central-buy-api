@@ -6,11 +6,14 @@ import {
   Param,
   UseGuards,
   Query,
+  ForbiddenException,
+  Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AcademyService } from './academy.service';
 import { SubmitQuizDto } from './dto/submit-quiz.dto';
 import { EcoAcademyProgressDto } from './dto/eco-academy-progress.dto';
+import { CreateEcoPillDto } from './dto/create-eco-pill.dto';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
@@ -63,5 +66,17 @@ export class EcoAcademyController {
     @Body() dto: EcoAcademyProgressDto,
   ) {
     return this.academyService.markPillCompleted(user.id, dto);
+  }
+
+  @Post('pills')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create new eco-pill (admin only)' })
+  async createPill(@CurrentUser() user: User, @Body() dto: CreateEcoPillDto, @Req() req: any) {
+    // Check admin role
+    if ((user as any).role !== 'admin') {
+      throw new ForbiddenException('Admin access required to create pills');
+    }
+    return this.academyService.createEcoPill(dto);
   }
 }

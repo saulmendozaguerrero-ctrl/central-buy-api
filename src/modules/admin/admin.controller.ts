@@ -77,4 +77,12 @@ export class AdminController {
     await this.checkAdminAccess(req);
     return this.adminService.getOnboardingReport();
   }
+
+  @Get('health')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'System health status' })
+  async getSystemHealth(@Req() req: any) {
+    await this.checkAdminAccess(req);
+    return this.adminService.getSystemHealth();
+  }
 }

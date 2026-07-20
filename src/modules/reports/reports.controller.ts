@@ -2,6 +2,7 @@ import { Controller, Get, Res, UseGuards, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { PdfService } from './pdf.service';
+import { AnalyticsService } from './analytics.service';
 import { AuthGuard } from '../../common/guards/auth.guard';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { User } from '../users/entities/user.entity';
@@ -11,7 +12,10 @@ import { User } from '../users/entities/user.entity';
 @UseGuards(AuthGuard)
 @ApiBearerAuth()
 export class ReportsController {
-  constructor(private readonly pdfService: PdfService) {}
+  constructor(
+    private readonly pdfService: PdfService,
+    private readonly analyticsService: AnalyticsService,
+  ) {}
 
   @Get('fuel-savings/pdf')
   @ApiOperation({ summary: 'Download fuel savings report as PDF' })
@@ -122,5 +126,29 @@ export class ReportsController {
     } catch (error) {
       res.status(500).json({ error: 'Failed to generate invoice' });
     }
+  }
+
+  @Get('prices')
+  @ApiOperation({ summary: 'Get historical fuel prices for last 30/60/90 days' })
+  async getPricesHistory(
+    @CurrentUser() user: User,
+    @Query('days') days: number = 30,
+  ) {
+    return this.analyticsService.getPricesHistory(user.id, days);
+  }
+
+  @Get('consumption')
+  @ApiOperation({ summary: 'Get fuel consumption analytics for last 30/60/90 days' })
+  async getConsumptionAnalytics(
+    @CurrentUser() user: User,
+    @Query('days') days: number = 30,
+  ) {
+    return this.analyticsService.getConsumptionAnalytics(user.id, days);
+  }
+
+  @Get('savings')
+  @ApiOperation({ summary: 'Calculate estimated savings and ROI from using CENTRAL BUY' })
+  async calculateSavings(@CurrentUser() user: User) {
+    return this.analyticsService.calculateSavings(user.id);
   }
 }

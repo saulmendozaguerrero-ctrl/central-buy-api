@@ -4,13 +4,14 @@ import { Repository } from 'typeorm';
 import { AcademyContent, ContentAccessLevel } from './entities/content.entity';
 import { CreateContentDto } from './dto/create-content.dto';
 import { SubscriptionPlan } from '../subscriptions/entities/subscription.entity';
-import { EcoPill } from './entities/eco-pill.entity';
+import { EcoPill, EcoPillCategory, EcoDifficulty } from './entities/eco-pill.entity';
 import { EcoQuiz, QuizQuestion } from './entities/eco-quiz.entity';
 import { EcoQuizAttempt, QuizAnswer } from './entities/eco-quiz-attempt.entity';
 import { EcoProgress } from './entities/eco-progress.entity';
 import { EcoCertificate } from './entities/eco-certificate.entity';
 import { SubmitQuizDto } from './dto/submit-quiz.dto';
 import { EcoAcademyProgressDto } from './dto/eco-academy-progress.dto';
+import { CreateEcoPillDto } from './dto/create-eco-pill.dto';
 
 @Injectable()
 export class AcademyService {
@@ -283,5 +284,33 @@ export class AcademyService {
     }
 
     return this.updateUserProgress(userId, 'pill', dto.completedPill);
+  }
+
+  async createEcoPill(dto: any): Promise<EcoPill> {
+    const slug = dto.slug || dto.title.toLowerCase().replace(/\s+/g, '-');
+
+    const existingPill = await this.ecoPillRepo.findOne({
+      where: { slug },
+    });
+
+    if (existingPill) {
+      throw new BadRequestException(`Pill with slug "${slug}" already exists`);
+    }
+
+    const pill = this.ecoPillRepo.create({
+      title: dto.title,
+      slug,
+      excerpt: dto.excerpt,
+      category: dto.category || EcoPillCategory.ECO_DRIVING,
+      durationMin: dto.durationMin,
+      videoUrl: dto.videoUrl,
+      imageUrl: dto.imageUrl,
+      difficulty: dto.difficulty || EcoDifficulty.BEGINNER,
+      accessLevel: dto.accessLevel || 'empresa',
+      content: dto.content,
+      published: dto.published !== undefined ? dto.published : true,
+    });
+
+    return this.ecoPillRepo.save(pill);
   }
 }
