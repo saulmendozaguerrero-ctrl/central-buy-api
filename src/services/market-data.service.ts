@@ -1,10 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import { AxiosResponse } from 'axios';
 
 @Injectable()
-export class PricesService {
-  private readonly logger = new Logger(PricesService.name);
+export class MarketDataService {
+  private readonly logger = new Logger(MarketDataService.name);
   private readonly OIL_PRICE_API = 'https://api.oilpriceapi.com/v1/brent';
   private readonly COMMODITIES_API = 'https://api.commodities-api.com/v1/latest';
 
@@ -19,7 +20,7 @@ export class PricesService {
 
     try {
       // Obtener precios de petróleo (Brent + WTI)
-      const oilResponse = await firstValueFrom(
+      const oilResponse: AxiosResponse<any> = await firstValueFrom(
         this.httpService.get(this.OIL_PRICE_API, {
           headers: {
             'Accept-Encoding': 'gzip, deflate',

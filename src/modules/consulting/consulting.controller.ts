@@ -1,33 +1,33 @@
 import { Controller, Get, Query, Logger } from '@nestjs/common';
-import { PricesService } from '../../services/prices.service';
+import { MarketDataService } from '../../services/market-data.service';
 
 @Controller('api/consulting')
 export class ConsultingController {
   private readonly logger = new Logger(ConsultingController.name);
 
-  constructor(private readonly pricesService: PricesService) {}
+  constructor(private readonly marketDataService: MarketDataService) {}
 
-  /**
-   * GET /api/consulting/forecast-24h
-   * Pronóstico de precios para las próximas 24 horas
-   * Útil para planificar repostaje
-   */
+  @Get('market-data')
+  async getMarketData() {
+    this.logger.log('📊 [GET] /api/consulting/market-data');
+    return await this.marketDataService.getMarketData();
+  }
+
+  @Get('platts-daily')
+  async getPlattsDaily() {
+    this.logger.log('📋 [GET] /api/consulting/platts-daily');
+    return await this.marketDataService.getPlattsDaily();
+  }
+
   @Get('forecast-24h')
   async getForecast24h() {
     this.logger.log('🔮 [GET] /api/consulting/forecast-24h');
-    return await this.pricesService.getForecast24h();
+    return await this.marketDataService.getForecast24h();
   }
 
-  /**
-   * GET /api/consulting/recommendation
-   * Obtener recomendación: ¿cuándo repostar?
-   * Query: liters (cantidad a repostar, default 50)
-   */
   @Get('recommendation')
   async getRecommendation(@Query('liters') liters: string = '50') {
-    this.logger.log(
-      `💡 [GET] /api/consulting/recommendation?liters=${liters}`
-    );
-    return await this.pricesService.getRecommendation(parseInt(liters, 10));
+    this.logger.log(`💡 [GET] /api/consulting/recommendation?liters=${liters}`);
+    return await this.marketDataService.getRecommendation(parseInt(liters, 10));
   }
 }

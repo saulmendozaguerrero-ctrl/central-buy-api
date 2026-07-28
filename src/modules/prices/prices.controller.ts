@@ -1,31 +1,49 @@
-import { Controller, Get, Query, Logger } from '@nestjs/common';
-import { PricesService } from '../../services/prices.service';
+import { Controller, Get, Post, Query, Param, UseGuards, Body } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { PricesService } from './prices.service';
+import { PriceHistoryQueryDto } from './dto/price-query.dto';
+import { AuthGuard } from '../../common/guards/auth.guard';
+import { FuelProduct, FuelRegion } from './entities/fuel-price.entity';
 
-@Controller('api/prices')
+@ApiTags('Prices')
+@Controller('prices')
 export class PricesController {
-  private readonly logger = new Logger(PricesController.name);
-
   constructor(private readonly pricesService: PricesService) {}
 
-  /**
-   * GET /api/prices/market-data
-   * Obtener datos de mercado en tiempo real
-   * Incluye: Brent, WTI, precios spot gasolina y diésel
-   */
-  @Get('market-data')
-  async getMarketData() {
-    this.logger.log('📊 [GET] /api/prices/market-data');
-    return await this.pricesService.getMarketData();
+  @Get('latest')
+  @ApiOperation({ summary: 'Get latest prices (PUBLIC)' })
+  async getLatest() { return this.pricesService.getLatest(); }
+
+  @Get('best')
+  @ApiOperation({ summary: 'Get best prices (PUBLIC)' })
+  async getBest() { return this.pricesService.getBestPrices(); }
+
+  @Post('update-daily')
+  @ApiOperation({ summary: 'Update daily prices (ADMIN ONLY)' })
+  async updateDailyPrices() {
+    try {
+      const result = await this.pricesService.updateDailyPrices();
+      return { message: 'Prices updated successfully', updated: result, timestamp: new Date().toISOString() };
+    } catch (e) {
+      return { error: (e as Error).message, timestamp: new Date().toISOString() };
+    }
   }
 
-  /**
-   * GET /api/prices/platts-daily
-   * Obtener datos Platts diarios
-   * En Mes 1: manual. En Mes 2+: API directa
-   */
-  @Get('platts-daily')
-  async getPlattsDaily() {
-    this.logger.log('📋 [GET] /api/prices/platts-daily');
-    return await this.pricesService.getPlattsDaily();
-  }
+  @Get('history')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Price history' })
+  async getHistory(@Query() query: PriceHistoryQueryDto) { return this.pricesService.getHistory(query); }
+
+  @Get('product/:product')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Prices by product' })
+  async getByProduct(@Param('product') product: FuelProduct) { return this.pricesService.getByProduct(product); }
+
+  @Get('region/:region')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Prices by region' })
+  async getByRegion(@Param('region') region: FuelRegion) { return this.pricesService.getByRegion(region); }
 }

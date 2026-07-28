@@ -52,6 +52,8 @@ import { EmailModule } from './modules/email/email.module';
 import { SmsModule } from './modules/sms/sms.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { LLMModule } from './modules/llm/llm.module';
+import { ConsultingModule } from './modules/consulting/consulting.module';
+import { LocationModule } from './modules/location/location.module';
 
 // App
 import { AppController } from './app.controller';
@@ -128,6 +130,8 @@ import { ConsultationsAliasController, PricesAliasController, WebhooksAliasContr
     UsersModule,
     SubscriptionsModule,
     PricesModule,
+    ConsultingModule,
+    LocationModule,
     ConfiguratorModule,
     ConsultationsModule,
     FleetModule,

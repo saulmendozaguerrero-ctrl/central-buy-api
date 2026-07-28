@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { ConsultingController } from './consulting.controller';
-import { PricesService } from '../../services/prices.service';
+import { MarketDataService } from '../../services/market-data.service';
 
 @Module({
   imports: [HttpModule],
   controllers: [ConsultingController],
-  providers: [PricesService],
-  exports: [PricesService],
+  providers: [MarketDataService],
+  exports: [MarketDataService],
 })
 export class ConsultingModule {}

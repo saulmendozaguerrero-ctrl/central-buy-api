@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import { AxiosResponse } from 'axios';
 
 @Injectable()
 export class LocationService {
@@ -23,7 +24,7 @@ export class LocationService {
     }
 
     try {
-      const response = await firstValueFrom(
+      const response: AxiosResponse<any> = await firstValueFrom(
         this.httpService.get(`${this.GOOGLE_MAPS_BASE}/geocode/json`, {
           params: {
             address,
@@ -77,7 +78,7 @@ export class LocationService {
     }
 
     try {
-      const response = await firstValueFrom(
+      const response: AxiosResponse<any> = await firstValueFrom(
         this.httpService.get(
           `${this.GOOGLE_MAPS_BASE}/distancematrix/json`,
           {
@@ -137,7 +138,7 @@ export class LocationService {
     }
 
     try {
-      const response = await firstValueFrom(
+      const response: AxiosResponse<any> = await firstValueFrom(
         this.httpService.get(
           `${this.GOOGLE_MAPS_BASE}/place/nearbysearch/json`,
           {
@@ -158,7 +159,7 @@ export class LocationService {
         search_location: { lat, lng },
         radius_meters: radiusMeters,
         found: places.length,
-        stations: places.map((place) => ({
+        stations: places.map((place: any) => ({
           name: place.name,
           location: place.geometry.location,
           address: place.vicinity,
@@ -186,7 +187,7 @@ export class LocationService {
     }
 
     try {
-      const response = await firstValueFrom(
+      const response: AxiosResponse<any> = await firstValueFrom(
         this.httpService.get(`${this.GOOGLE_MAPS_BASE}/place/details/json`, {
           params: {
             place_id: placeId,
