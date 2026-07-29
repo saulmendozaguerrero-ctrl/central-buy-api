@@ -1,5 +1,5 @@
 import { Controller, Get, Query, Logger } from '@nestjs/common';
-import { GasBuddyService } from '../../services/gasbbuddy.service';
+import { GooglePlacesService } from '../../services/google-places.service';
 import { WeatherService } from '../../services/weather.service';
 
 @Controller('api/locations')
@@ -7,25 +7,25 @@ export class LocationsController {
   private readonly logger = new Logger(LocationsController.name);
 
   constructor(
-    private readonly gasBuddyService: GasBuddyService,
+    private readonly googlePlacesService: GooglePlacesService,
     private readonly weatherService: WeatherService,
   ) {}
 
   /**
-   * GET /api/locations/nearby-stations
-   * Obtener gasolineras cercanas con precios reales
+   * GET /api/locations/nearby-gas-stations
+   * Obtener gasolineras cercanas usando Google Places API
    */
-  @Get('nearby-stations')
-  async getNearbyStations(
+  @Get('nearby-gas-stations')
+  async getNearbyGasStations(
     @Query('lat') latitude: string,
     @Query('lng') longitude: string,
-    @Query('radius') radius: string = '5',
+    @Query('radius') radius: string = '5000',
   ) {
-    this.logger.log(`📍 Buscando estaciones: lat=${latitude}, lng=${longitude}, radius=${radius}km`);
+    this.logger.log(`📍 Buscando gasolineras: lat=${latitude}, lng=${longitude}, radius=${radius}m`);
 
     const lat = parseFloat(latitude);
     const lng = parseFloat(longitude);
-    const radiusKm = parseInt(radius) || 5;
+    const radiusMeters = parseInt(radius) || 5000;
 
     if (isNaN(lat) || isNaN(lng)) {
       return {
@@ -35,41 +35,12 @@ export class LocationsController {
       };
     }
 
-    const stations = await this.gasBuddyService.getNearbyStations(lat, lng, radiusKm);
+    const response = await this.googlePlacesService.getNearbyGasStations(lat, lng, radiusMeters);
     return {
-      status: stations.status,
-      count: stations.count,
-      data: stations.stations,
-      timestamp: stations.timestamp,
-    };
-  }
-
-  /**
-   * GET /api/locations/cheapest-station
-   * Obtener gasolinera más barata en área
-   */
-  @Get('cheapest-station')
-  async getCheapestStation(
-    @Query('lat') latitude: string,
-    @Query('lng') longitude: string,
-    @Query('fuel') fuelType: 'diesel' | 'gasoline' = 'diesel',
-  ) {
-    const lat = parseFloat(latitude);
-    const lng = parseFloat(longitude);
-
-    const cheapest = await this.gasBuddyService.getCheapestStation(lat, lng, fuelType);
-
-    if (!cheapest) {
-      return {
-        status: 'error',
-        message: 'No stations found',
-        data: null,
-      };
-    }
-
-    return {
-      status: 'success',
-      data: cheapest,
+      status: response.status,
+      count: response.count,
+      data: response.stations,
+      timestamp: response.timestamp,
     };
   }
 }
