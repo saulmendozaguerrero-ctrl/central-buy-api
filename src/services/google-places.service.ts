@@ -52,8 +52,20 @@ export class GooglePlacesService {
     this.logger.log(
       `🔍 Buscando gasolineras con Google Places: ${latitude}, ${longitude} (radio: ${radius_meters / 1000}km)`,
     );
+    this.logger.log(`Google Maps API Key present: ${this.googleMapsApiKey ? 'YES' : 'NO (usando mock)'}`);
 
     try {
+      // Si no hay API key, usar mock directamente
+      if (!this.googleMapsApiKey) {
+        this.logger.warn('⚠️ Google Maps API key not configured, using mock data');
+        return {
+          status: 'error',
+          stations: this.getMockGasStations(latitude, longitude),
+          count: 5,
+          timestamp: new Date().toISOString(),
+        };
+      }
+
       const response: AxiosResponse<any> = await firstValueFrom(
         this.httpService.get(this.GOOGLE_PLACES_API, {
           params: {

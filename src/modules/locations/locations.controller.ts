@@ -35,12 +35,21 @@ export class LocationsController {
       };
     }
 
-    const response = await this.googlePlacesService.getNearbyGasStations(lat, lng, radiusMeters);
-    return {
-      status: response.status,
-      count: response.count,
-      data: response.stations,
-      timestamp: response.timestamp,
-    };
+    try {
+      const response = await this.googlePlacesService.getNearbyGasStations(lat, lng, radiusMeters);
+      return {
+        status: response?.status || 'success',
+        count: response?.count || 0,
+        data: response?.stations || [],
+        timestamp: response?.timestamp || new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error(`Error fetching gas stations: ${error.message}`);
+      return {
+        status: 'error',
+        message: error.message,
+        data: [],
+      };
+    }
   }
 }

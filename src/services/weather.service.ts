@@ -57,8 +57,15 @@ export class WeatherService {
    */
   async getWeatherForecast(latitude: number, longitude: number): Promise<WeatherData> {
     this.logger.log(`🌤️ Obteniendo clima para ${latitude}, ${longitude}`);
+    this.logger.log(`API Key present: ${this.openWeatherApiKey ? 'YES' : 'NO (usando mock)'}`);
 
     try {
+      // Si no hay API key, usar mock directamente
+      if (!this.openWeatherApiKey || this.openWeatherApiKey === 'demo') {
+        this.logger.warn('⚠️ OpenWeather API key not configured, using mock data');
+        return this.getMockWeatherData(latitude, longitude);
+      }
+
       // Obtener clima actual + forecast
       const response: AxiosResponse<any> = await firstValueFrom(
         this.httpService.get(`${this.OPENWEATHER_API}/forecast`, {

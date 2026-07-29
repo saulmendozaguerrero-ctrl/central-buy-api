@@ -49,7 +49,23 @@ export class WeatherController {
     const lat = parseFloat(latitude);
     const lng = parseFloat(longitude);
 
+    if (isNaN(lat) || isNaN(lng)) {
+      return {
+        status: 'error',
+        message: 'Invalid coordinates',
+        data: null,
+      };
+    }
+
     const weatherData = await this.weatherService.getWeatherForecast(lat, lng);
+
+    if (!weatherData || !weatherData.travel_recommendation) {
+      return {
+        status: 'error',
+        message: 'Failed to get weather data',
+        data: null,
+      };
+    }
 
     return {
       status: 'success',
