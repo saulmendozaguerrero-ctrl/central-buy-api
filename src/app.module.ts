@@ -54,6 +54,8 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { LLMModule } from './modules/llm/llm.module';
 import { ConsultingModule } from './modules/consulting/consulting.module';
 import { LocationModule } from './modules/location/location.module';
+import { LocationsModule } from './modules/locations/locations.module';
+import { WeatherModule } from './modules/weather/weather.module';}
 
 // App
 import { AppController } from './app.controller';
@@ -132,6 +134,8 @@ import { ConsultationsAliasController, PricesAliasController, WebhooksAliasContr
     PricesModule,
     ConsultingModule,
     LocationModule,
+    LocationsModule,
+    WeatherModule,
     ConfiguratorModule,
     ConsultationsModule,
     FleetModule,
