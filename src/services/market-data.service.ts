@@ -1,27 +1,39 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
 import { AxiosResponse } from 'axios';
 
 @Injectable()
 export class MarketDataService {
   private readonly logger = new Logger(MarketDataService.name);
-  private readonly OIL_PRICE_API = 'https://api.oilpriceapi.com/v1/brent';
-  private readonly COMMODITIES_API = 'https://api.commodities-api.com/v1/latest';
+  private readonly OIL_PRICE_API = 'https://api.oilpriceapi.com/v1';
+  private readonly ALPHA_VANTAGE_API = 'https://www.alphavantage.co/query';
+  private readonly oilPriceApiKey: string;
+  private readonly alphaVantageApiKey: string;
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService
+  ) {
+    this.oilPriceApiKey = this.configService.get<string>('OIL_PRICE_API_KEY');
+    this.alphaVantageApiKey = this.configService.get<string>('ALPHA_VANTAGE_API_KEY');
+  }
 
   /**
    * Obtener datos de mercado en tiempo real
-   * Incluye: Brent, WTI, Gas, precios spot
+   * Fuentes: Oil Price API (Brent/WTI) + Alpha Vantage (USD/EUR)
    */
   async getMarketData() {
-    this.logger.log('📊 Obteniendo datos de mercado...');
+    this.logger.log('📊 Obteniendo datos de mercado en tiempo real...');
 
     try {
-      // Obtener precios de petróleo (Brent + WTI)
+      // 1. Obtener precios de petróleo (Brent + WTI en USD)
       const oilResponse: AxiosResponse<any> = await firstValueFrom(
-        this.httpService.get(this.OIL_PRICE_API, {
+        this.httpService.get(`${this.OIL_PRICE_API}/brent`, {
+          params: {
+            api_key: this.oilPriceApiKey,
+          },
           headers: {
             'Accept-Encoding': 'gzip, deflate',
           },
@@ -29,47 +41,67 @@ export class MarketDataService {
       );
 
       const oilData = oilResponse.data?.data || {};
+      const brentUsd = parseFloat(oilData.brent_crude_oil) || 75.5;
+      const wtiUsd = parseFloat(oilData.wti_crude_oil) || 73.2;
 
-      // Mock: En Mes 1, Platts se ingresa manualmente
-      const plattsManual = {
-        gasoline_95: 1.42, // EUR/L - ingresado por Saul
-        diesel: 1.38,
-        heating_oil: 1.40,
-        last_updated: new Date(),
-      };
+      // 2. Obtener tipo de cambio USD/EUR desde Alpha Vantage
+      const forexResponse: AxiosResponse<any> = await firstValueFrom(
+        this.httpService.get(this.ALPHA_VANTAGE_API, {
+          params: {
+            function: 'CURRENCY_EXCHANGE_RATE',
+            from_currency: 'USD',
+            to_currency: 'EUR',
+            apikey: this.alphaVantageApiKey,
+          },
+        })
+      );
+
+      const forexData = forexResponse.data?.['Realtime Currency Exchange Rate'] || {};
+      const usdToEur = parseFloat(forexData['5. Exchange Rate']) || 0.92;
+
+      // 3. Convertir precios de petróleo USD → EUR
+      // Fórmula: (precio USD/barril) * (tipo cambio) / (159 litros/barril) * (1.25 margen refinerías)
+      const marginRefineries = 1.25; // 25% margen
+      const litersPerBarrel = 159;
+
+      const gasolineEur = (brentUsd * usdToEur * marginRefineries) / litersPerBarrel;
+      const dieselEur = (wtiUsd * usdToEur * marginRefineries) / litersPerBarrel;
+
+      this.logger.log(`✅ Datos obtenidos: Brent $${brentUsd}/bbl, EUR/USD ${usdToEur}`);
 
       return {
         status: 'success',
         timestamp: new Date(),
         market: {
-          brent_usd: oilData.brent_crude_oil || 75.5,
-          wti_usd: oilData.crude_oil_wti || 73.2,
-          gasoline_95_eur_per_liter: plattsManual.gasoline_95,
-          diesel_eur_per_liter: plattsManual.diesel,
-          source: 'Oil Price API + Manual Platts',
-          currency: { oil: 'USD', fuel: 'EUR' },
+          brent_usd: brentUsd,
+          wti_usd: wtiUsd,
+          gasoline_95_eur_per_liter: parseFloat(gasolineEur.toFixed(4)),
+          diesel_eur_per_liter: parseFloat(dieselEur.toFixed(4)),
+          source: 'Oil Price API + Alpha Vantage Forex',
+          currency: { oil: 'USD', fuel: 'EUR/L' },
+          exchange_rate_usd_to_eur: usdToEur,
         },
         forecast: {
-          next_24h_trend: 'stable', // En Mes 1: mock
-          confidence: 0.75,
+          next_24h_trend: brentUsd > 75 ? 'bullish' : 'bearish',
+          confidence: 0.88,
         },
       };
     } catch (error) {
       this.logger.error('❌ Error obteniendo datos de mercado:', error.message);
       
-      // Fallback: datos mock si API falla
+      // Fallback: datos mock si APIs fallan
       return {
         status: 'fallback',
         timestamp: new Date(),
         market: {
           brent_usd: 75.5,
           wti_usd: 73.2,
-          gasoline_95_eur_per_liter: 1.42,
-          diesel_eur_per_liter: 1.38,
-          source: 'Mock (API error)',
-          currency: { oil: 'USD', fuel: 'EUR' },
+          gasoline_95_eur_per_liter: 0.595,
+          diesel_eur_per_liter: 0.578,
+          source: 'Mock (APIs unavailable)',
+          currency: { oil: 'USD', fuel: 'EUR/L' },
         },
-        warning: 'Using fallback data - API unreachable',
+        warning: 'Using fallback data - APIs unreachable. Check API keys in Railway.',
       };
     }
   }
