@@ -71,7 +71,7 @@ export class WeatherController {
       status: 'success',
       data: {
         score: weatherData.travel_recommendation.score,
-        best_time: weatherData.travel_recommendation.best_time,
+        best_time: weatherData.travel_recommendation.best_time_to_travel,
         conditions: weatherData.travel_recommendation.conditions,
         warnings: weatherData.travel_recommendation.warnings,
         timestamp: weatherData.timestamp,

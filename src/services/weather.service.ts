@@ -118,7 +118,7 @@ export class WeatherService {
           condition: current.weather[0].main,
           icon: current.weather[0].icon,
         },
-        forecast_24h,
+        forecast_24h: forecast24h,
         travel_recommendation: {
           score: travelScore.score,
           best_time_to_travel: travelScore.best_time,

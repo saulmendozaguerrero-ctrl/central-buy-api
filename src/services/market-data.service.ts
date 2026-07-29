@@ -16,8 +16,8 @@ export class MarketDataService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService
   ) {
-    this.oilPriceApiKey = this.configService.get<string>('OIL_PRICE_API_KEY');
-    this.alphaVantageApiKey = this.configService.get<string>('ALPHA_VANTAGE_API_KEY');
+    this.oilPriceApiKey = this.configService.get<string>('OIL_PRICE_API_KEY') || '';
+    this.alphaVantageApiKey = this.configService.get<string>('ALPHA_VANTAGE_API_KEY') || '';
   }
 
   /**

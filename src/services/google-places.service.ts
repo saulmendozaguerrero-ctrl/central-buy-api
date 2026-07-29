@@ -38,7 +38,7 @@ export class GooglePlacesService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
-    this.googleMapsApiKey = this.configService.get<string>('GOOGLE_MAPS_API_KEY');
+    this.googleMapsApiKey = this.configService.get<string>('GOOGLE_MAPS_API_KEY') || '';
   }
 
   /**
