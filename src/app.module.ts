@@ -19,6 +19,8 @@ import { Subscription } from './modules/subscriptions/entities/subscription.enti
 import { Organization } from './modules/organizations/entities/organization.entity';
 import { OrgMember } from './modules/organizations/entities/org-member.entity';
 import { FuelPrice } from './modules/prices/entities/fuel-price.entity';
+import { StationPrice } from './modules/prices/entities/station-price.entity';
+import { PriceSnapshot } from './modules/prices/entities/price-snapshot.entity';
 import { Vehicle } from './modules/fleet/entities/vehicle.entity';
 import { FuelLog } from './modules/fleet/entities/fuel-log.entity';
 import { EcoScore } from './modules/fleet/entities/eco-score.entity';
@@ -109,6 +111,8 @@ import { ConsultationsAliasController, PricesAliasController, WebhooksAliasContr
           EcoCertificate,
           MarketplaceListing,
           UserProfile,
+          StationPrice,
+          PriceSnapshot,
         ],
         synchronize: true,
         logging: config.get<string>('app.nodeEnv') === 'development',
