@@ -15,7 +15,7 @@ export class WeatherController {
   async getWeatherForecast(
     @Query('lat') latitude: string,
     @Query('lng') longitude: string,
-  ) {
+  ): Promise<any> {
     this.logger.log(`🌤️ Obteniendo clima para lat=${latitude}, lng=${longitude}`);
 
     const lat = parseFloat(latitude);
@@ -45,7 +45,7 @@ export class WeatherController {
   async getTravelScore(
     @Query('lat') latitude: string,
     @Query('lng') longitude: string,
-  ) {
+  ): Promise<any> {
     const lat = parseFloat(latitude);
     const lng = parseFloat(longitude);
 

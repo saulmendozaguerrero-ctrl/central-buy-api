@@ -20,7 +20,7 @@ export class LocationsController {
     @Query('lat') latitude: string,
     @Query('lng') longitude: string,
     @Query('radius') radius: string = '5000',
-  ) {
+  ): Promise<any> {
     this.logger.log(`📍 Buscando gasolineras: lat=${latitude}, lng=${longitude}, radius=${radius}m`);
 
     const lat = parseFloat(latitude);

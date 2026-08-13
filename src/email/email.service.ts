@@ -289,7 +289,7 @@ export class EmailService {
             <div class="footer-links">
               <a href="https://central-buy.es/privacy">Política de Privacidad</a>
               <a href="https://central-buy.es/terms">Términos de Servicio</a>
-              <a href="https://central-buy-app.vercel.app/unsubscribe?email=${userEmail}">Desuscribirse</a>
+              <a href="https://central-buy-app.vercel.app/unsubscribe">Desuscribirse</a>
             </div>
             <p>CENTRAL BUY, Ciempozuelos, España</p>
             <p style="color: #d1d5db; font-size: 11px;">
