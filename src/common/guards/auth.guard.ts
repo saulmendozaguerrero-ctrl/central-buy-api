@@ -6,6 +6,9 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../../modules/users/users.service';
+import * as jwt from 'jsonwebtoken';
+
+const ADMIN_JWT_SECRET = process.env.ADMIN_JWT_SECRET || 'cb-admin-jwt-secret-2026';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -25,6 +28,17 @@ export class AuthGuard implements CanActivate {
     const token = authHeader.split(' ')[1];
 
     try {
+      // Admin JWT propio — independiente de Clerk
+      try {
+        const payload = jwt.verify(token, ADMIN_JWT_SECRET) as any;
+        if (payload?.type === 'admin-jwt' && payload?.role === 'admin') {
+          request.user = { role: 'admin', email: payload.email, id: 'admin' };
+          return true;
+        }
+      } catch {
+        // No es admin JWT, continuar con Clerk
+      }
+
       // In development mode, support a mock token format: "mock_<clerkUserId>"
       const nodeEnv = this.configService.get<string>('app.nodeEnv');
 
