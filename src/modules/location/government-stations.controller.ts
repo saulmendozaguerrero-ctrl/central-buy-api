@@ -1,14 +1,14 @@
 import { Controller, Get, Query, Logger, BadRequestException } from '@nestjs/common';
 import { GovernmentStationsService } from '../../services/government-stations.service';
 
-@Controller('api/location')
+@Controller('api')
 export class GovernmentStationsController {
   private readonly logger = new Logger(GovernmentStationsController.name);
 
   constructor(private readonly govService: GovernmentStationsService) {}
 
   /**
-   * GET /api/location/government-stations
+   * GET /api/government-stations
    * Obtener gasolineras reales del Ministerio de Industria (España)
    * 11.507 gasolineras, datos actualizados diariamente
    * Query: lat, lng, radius_km (default 10)
@@ -35,7 +35,7 @@ export class GovernmentStationsController {
   }
 
   /**
-   * GET /api/location/government-stations/all
+   * GET /api/government-stations/all
    * Descargar TODAS las gasolineras (11.507) — use con cuidado
    * Opcional: filter por provincia
    */
@@ -49,7 +49,7 @@ export class GovernmentStationsController {
   }
 
   /**
-   * GET /api/location/government-stations/prices
+   * GET /api/government-stations/prices
    * Precios de gasolina + diésel por región/provincia
    * Query: product (gasolina|diesel|todos)
    */
