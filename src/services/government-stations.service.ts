@@ -82,42 +82,45 @@ export class GovernmentStationsService {
   }
 
   /**
-   * Parsear datos en formato texto del gobierno
-   * Formato: código|nombre|dirección|lat|lng|provincia|horario|marca|gasolina|diésel|...
+   * Parsear datos en formato JSON del gobierno
+   * Formato: {"ListaEESSPrecio": [{"C.P.", "Dirección", "Latitud", "Longitud (WGS84)", "Precio Gasolina 95 E10", "Precio Diésel"}
    */
   private parseGovernmentData(rawData: string): GovernmentStation[] {
     const stations: GovernmentStation[] = [];
-    const lines = rawData.split('\n');
 
-    for (const line of lines) {
-      if (!line.trim()) continue;
+    try {
+      const json = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
+      const lista = json.ListaEESSPrecio || [];
 
-      const parts = line.split('|');
+      for (const station of lista) {
+        // Reemplazar coma por punto en coordenadas españolas
+        const latStr = (station.Latitud || '').replace(',', '.');
+        const lngStr = (station['Longitud (WGS84)'] || '').replace(',', '.');
+        const gaso95 = (station['Precio Gasolina 95 E10'] || '').replace(',', '.');
+        const diesel = (station['Precio Diésel'] || '').replace(',', '.');
 
-      if (parts.length < 9) continue;
+        const s: GovernmentStation = {
+          code: station['C.P.'],
+          name: station.Localidad || 'N/A',
+          address: station['Dirección'] || 'N/A',
+          lat: parseFloat(latStr) || 0,
+          lng: parseFloat(lngStr) || 0,
+          province: station.Municipio || 'N/A',
+          schedule: station.Horario,
+          brand: station['Marca de distribuidor'] || 'N/A',
+          gasolina: gaso95 ? parseFloat(gaso95) : null,
+          diesel: diesel ? parseFloat(diesel) : null,
+          updateDate: new Date().toISOString(),
+        };
 
-      const station: GovernmentStation = {
-        code: parts[0],
-        name: parts[1]?.trim() || 'N/A',
-        address: parts[2]?.trim() || 'N/A',
-        lat: parseFloat(parts[3]) || 0,
-        lng: parseFloat(parts[4]) || 0,
-        province: parts[5]?.trim() || 'N/A',
-        schedule: parts[6]?.trim(),
-        brand: parts[7]?.trim(),
-        gasolina: parts[8] ? parseFloat(parts[8]) : null,
-        diesel: parts[9] ? parseFloat(parts[9]) : null,
-        gasolina95: parts[10] ? parseFloat(parts[10]) : null,
-        biodiesel: parts[11] ? parseFloat(parts[11]) : null,
-        bioetanol: parts[12] ? parseFloat(parts[12]) : null,
-        gas: parts[13] ? parseFloat(parts[13]) : null,
-        updateDate: new Date().toISOString(),
-      };
-
-      // Filtrar estaciones sin coordenadas válidas
-      if (station.lat !== 0 && station.lng !== 0) {
-        stations.push(station);
+        // Filtrar estaciones sin coordenadas válidas
+        if (s.lat !== 0 && s.lng !== 0) {
+          stations.push(s);
+        }
       }
+    } catch (error) {
+      this.logger.error(`❌ Error parseando JSON: ${error.message}`);
+      return [];
     }
 
     return stations;
