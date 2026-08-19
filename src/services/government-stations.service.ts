@@ -46,14 +46,15 @@ export class GovernmentStationsService {
     this.logger.log('📡 Descargando datos del API del gobierno...');
 
     try {
-      // El API devuelve datos en formato texto separado por |
-      const response = await firstValueFrom(
-        this.httpService.get(this.GOV_API_URL, {
-          timeout: 30000,
-        })
-      );
+      // Usar fetch nativo para mejor compatibilidad
+      const response = await fetch(this.GOV_API_URL);
 
-      const stations = this.parseGovernmentData(response.data);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const text = await response.text();
+      const stations = this.parseGovernmentData(text);
       this.stationsCache = stations;
       this.cacheTimestamp = now;
 
