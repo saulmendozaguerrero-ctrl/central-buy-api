@@ -58,6 +58,7 @@ import { ConsultingModule } from './modules/consulting/consulting.module';
 import { LocationModule } from './modules/location/location.module';
 import { LocationsModule } from './modules/locations/locations.module';
 import { WeatherModule } from './modules/weather/weather.module';
+import { GovernmentStationsModule } from './modules/government-stations/government-stations.module';
 
 // App
 import { AppController } from './app.controller';
@@ -140,6 +141,7 @@ import { ConsultationsAliasController, PricesAliasController, WebhooksAliasContr
     LocationModule,
     LocationsModule,
     WeatherModule,
+    GovernmentStationsModule,
     ConfiguratorModule,
     ConsultationsModule,
     FleetModule,
