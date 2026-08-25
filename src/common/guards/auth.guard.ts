@@ -64,10 +64,22 @@ export class AuthGuard implements CanActivate {
       });
 
       const clerkUserId = payload.sub;
-      const user = await this.usersService.findByClerkId(clerkUserId);
+      let user = await this.usersService.findByClerkId(clerkUserId);
 
+      // Auto-create user if they authenticated with Clerk but don't exist in Railway yet
       if (!user) {
-        throw new UnauthorizedException('User not registered in Central Buy');
+        const email = (payload as any).email
+          || (payload as any).email_address
+          || `${clerkUserId}@clerk.user`;
+        const name = (payload as any).name
+          || (payload as any).full_name
+          || email.split('@')[0];
+        user = await this.usersService.createUserWithPlan(
+          clerkUserId,
+          email,
+          name,
+          'particular' as any,
+        );
       }
 
       request.user = user;
