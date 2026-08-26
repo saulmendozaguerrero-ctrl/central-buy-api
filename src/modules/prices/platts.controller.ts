@@ -8,6 +8,13 @@ import { PlattsCategory } from './entities/platts-price.entity';
 export class PlattsController {
   constructor(private readonly plattsService: PlattsService) {}
 
+  @Get('scrape-status')
+  @ApiOperation({ summary: 'Get last scrape status for post-scrape alerts' })
+  async getScrapeStatus() {
+    const status = await this.plattsService.getScrapeStatus();
+    return { data: status };
+  }
+
   @Get('latest')
   @ApiOperation({ summary: 'Get latest Platts data (PUBLIC)' })
   async getLatest() {

@@ -306,4 +306,56 @@ export class PlattsService {
       totalProducts: prices.length,
     };
   }
+
+  // ─── Scrape Status (for post-scrape alert cron) ──────────────────────
+
+  async getScrapeStatus(): Promise<{
+    timestamp: string;
+    countPrices: number;
+    brentPrice: number | null;
+    reportDate: string | null;
+    status: 'success' | 'no_data';
+    lastSnapshotAge: string;
+  }> {
+    const now = new Date();
+    const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Europe/Madrid' });
+
+    // Get latest snapshot
+    const snapshot = await this.snapshotRepo.findOne({
+      where: {},
+      order: { reportDate: 'DESC' },
+    });
+
+    if (!snapshot) {
+      return {
+        timestamp: now.toISOString(),
+        countPrices: 0,
+        brentPrice: null,
+        reportDate: null,
+        status: 'no_data',
+        lastSnapshotAge: 'never',
+      };
+    }
+
+    // Count prices for the latest snapshot
+    const prices = await this.priceRepo.find({
+      where: { priceDate: snapshot.reportDate },
+    });
+
+    // Calculate age of last snapshot
+    const snapshotDate = new Date(snapshot.reportDate + 'T00:00:00Z');
+    const ageDays = Math.floor((now.getTime() - snapshotDate.getTime()) / (1000 * 60 * 60 * 24));
+    const ageStr = ageDays === 0 ? 'today' : ageDays === 1 ? '1 day ago' : `${ageDays} days ago`;
+
+    const isTodayData = snapshot.reportDate === todayStr;
+
+    return {
+      timestamp: now.toISOString(),
+      countPrices: prices.length,
+      brentPrice: snapshot.brentFrontMonth ? Number(snapshot.brentFrontMonth) : null,
+      reportDate: snapshot.reportDate,
+      status: isTodayData ? 'success' : 'no_data',
+      lastSnapshotAge: ageStr,
+    };
+  }
 }
