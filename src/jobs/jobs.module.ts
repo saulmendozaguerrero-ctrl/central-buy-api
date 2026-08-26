@@ -4,6 +4,7 @@ import { HttpModule } from '@nestjs/axios';
 import { MonthlyReportJob } from './monthly-report.job';
 import { EcoScoreCalcJob } from './eco-score-calc.job';
 import { PriceImportJob } from './price-import.job';
+import { PlattsScrapeJob } from './platts-scrape.job';
 import { MarketDataService } from '../services/market-data.service';
 import { Organization } from '../modules/organizations/entities/organization.entity';
 import { OrgMember } from '../modules/organizations/entities/org-member.entity';
@@ -12,6 +13,8 @@ import { FuelLog } from '../modules/fleet/entities/fuel-log.entity';
 import { Vehicle } from '../modules/fleet/entities/vehicle.entity';
 import { EcoScore } from '../modules/fleet/entities/eco-score.entity';
 import { EcoScoreService } from '../modules/fleet/eco-score.service';
+import { PlattsPrice, PlattsSnapshot } from '../modules/prices/entities/platts-price.entity';
+import { PlattsService } from '../modules/prices/platts.service';
 
 @Module({
   imports: [
@@ -23,8 +26,18 @@ import { EcoScoreService } from '../modules/fleet/eco-score.service';
       FuelLog,
       Vehicle,
       EcoScore,
+      PlattsPrice,
+      PlattsSnapshot,
     ]),
   ],
-  providers: [MonthlyReportJob, EcoScoreCalcJob, PriceImportJob, MarketDataService, EcoScoreService],
+  providers: [
+    MonthlyReportJob,
+    EcoScoreCalcJob,
+    PriceImportJob,
+    PlattsScrapeJob,
+    MarketDataService,
+    EcoScoreService,
+    PlattsService,
+  ],
 })
 export class JobsModule {}
