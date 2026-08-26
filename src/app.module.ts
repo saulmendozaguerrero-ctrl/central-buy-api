@@ -35,6 +35,7 @@ import { EcoQuizAttempt } from './modules/academy/entities/eco-quiz-attempt.enti
 import { EcoProgress } from './modules/academy/entities/eco-progress.entity';
 import { EcoCertificate } from './modules/academy/entities/eco-certificate.entity';
 import { MarketplaceListing } from './modules/marketplace/entities/listing.entity';
+import { PlattsPrice, PlattsSnapshot } from './modules/prices/entities/platts-price.entity';
 
 // Feature Modules
 import { AuthModule } from './modules/auth/auth.module';
@@ -113,6 +114,8 @@ import { ConsultationsAliasController, PricesAliasController, WebhooksAliasContr
           UserProfile,
           StationPrice,
           PriceSnapshot,
+          PlattsPrice,
+          PlattsSnapshot,
         ],
         synchronize: true,
         logging: config.get<string>('app.nodeEnv') === 'development',
