@@ -9,16 +9,19 @@ import { PlattsParser } from '../modules/prices/platts-parser';
 /**
  * Platts Scrape Job
  * 
- * Runs daily at 10:00 Madrid time to fetch Darioush Kanjouri's LinkedIn posts
- * containing Platts European Marketscan data.
+ * Runs every 15 minutes between 09:00-11:45 Madrid time (weekdays) to fetch
+ * Darioush Kanjouri's LinkedIn posts containing Platts European Marketscan data.
+ * 
+ * Window: 09:00, 09:15, 09:30, 09:45, 10:00, 10:15, 10:30, 10:45, 11:00, 11:15, 11:30, 11:45
  * 
  * Flow:
- * 1. Scrape LinkedIn profile for new Platts posts
- * 2. Parse post text to extract commodity prices
- * 3. Store in database (platts_prices + platts_snapshots)
- * 4. Alert via Telegram on success/failure
+ * 1. Check if today's data already ingested (dedup by reportDate) → skip if yes
+ * 2. Scrape LinkedIn profile for new Platts posts
+ * 3. Parse post text to extract commodity prices
+ * 4. Store in database (platts_prices + platts_snapshots)
+ * 5. Alert via Telegram on success/failure
  * 
- * Retries: up to 3 attempts with 5-minute intervals
+ * Deduplication: Checks reportDate before ingestion — safe for repeated calls
  */
 @Injectable()
 export class PlattsScrapeJob {
@@ -40,57 +43,66 @@ export class PlattsScrapeJob {
   }
 
   /**
-   * Cron: Daily at 10:00 Madrid (Europe/Madrid = UTC+1/+2)
-   * Darioush typically posts Platts data in the morning CET
+   * Cron: Every 15 min between 09:00-11:45 Madrid (Europe/Madrid = UTC+1/+2)
+   * Window: L-V 09:00, 09:15, 09:30, ..., 11:30, 11:45
+   * Darioush posts Platts data in the morning CET — timing varies day to day.
+   * Each invocation checks for new data; skips if already ingested today.
    */
-  @Cron('0 10 * * 1-5', { timeZone: 'Europe/Madrid' }) // Weekdays only (Platts doesn't publish weekends)
+  @Cron('0,15,30,45 9-11 * * 1-5', { timeZone: 'Europe/Madrid' })
   async handleDailyScrape(): Promise<void> {
-    this.logger.log('🔄 Starting daily Platts scrape job...');
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit' });
 
-    for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
-      try {
-        const result = await this.executeScrape();
+    // Check if today's data already ingested (dedup)
+    const todayStr = now.toLocaleDateString('en-CA', { timeZone: 'Europe/Madrid' }); // YYYY-MM-DD
+    const { snapshot: existingSnapshot } = await this.plattsService.getLatest();
+    if (existingSnapshot && existingSnapshot.reportDate === todayStr) {
+      this.logger.log(`⏭️ [${timeStr}] Platts data for ${todayStr} already ingested. Skipping.`);
+      return;
+    }
 
-        if (result.success) {
-          const msg = [
-            '✅ <b>Platts Data Ingested</b>',
-            `📅 Date: ${result.reportDate}`,
-            `📊 Products: ${result.pricesInserted}`,
-            `🛢️ Brent: $${result.brentPrice || '—'}/bbl`,
-            `💱 EUR/USD: ${result.eurUsd || '—'}`,
-            `🔗 Source: ${result.sourceType}`,
-          ].join('\n');
+    this.logger.log(`🔄 [${timeStr}] Starting Platts scrape (window 09:00-11:45)...`);
 
-          await this.sendTelegramAlert(msg);
-          this.logger.log(`✅ Platts scrape completed: ${result.pricesInserted} prices ingested`);
-          return;
-        }
+    try {
+      const result = await this.executeScrape();
 
-        if (result.noNewData) {
-          this.logger.log('ℹ️ No new Platts data found (may not be posted yet)');
-          if (attempt < this.maxRetries) {
-            this.logger.log(`⏳ Retry ${attempt + 1}/${this.maxRetries} in 5 minutes...`);
-            await this.delay(this.retryDelayMs);
-          }
-          continue;
-        }
+      if (result.success) {
+        const msg = [
+          '✅ <b>Platts Data Ingested</b>',
+          `📅 Date: ${result.reportDate}`,
+          `⏰ Captured at: ${timeStr} Madrid`,
+          `📊 Products: ${result.pricesInserted}`,
+          `🛢️ Brent: $${result.brentPrice || '—'}/bbl`,
+          `💱 EUR/USD: ${result.eurUsd || '—'}`,
+          `🔗 Source: ${result.sourceType}`,
+        ].join('\n');
 
-        throw new Error(result.error || 'Unknown error');
-      } catch (err) {
-        const errorMsg = (err as Error).message;
-        this.logger.error(`❌ Platts scrape attempt ${attempt}/${this.maxRetries} failed: ${errorMsg}`);
+        await this.sendTelegramAlert(msg);
+        this.logger.log(`✅ [${timeStr}] Platts scrape completed: ${result.pricesInserted} prices ingested`);
+        return;
+      }
 
-        if (attempt === this.maxRetries) {
-          await this.sendTelegramAlert(
-            `❌ <b>Platts Scrape FAILED</b>\n\n` +
-            `Error: ${errorMsg}\n` +
-            `Attempts: ${this.maxRetries}\n\n` +
-            `⚠️ Manual data entry may be required.\n` +
-            `Use POST /api/platts/ingest endpoint.`
-          );
-        } else {
-          await this.delay(this.retryDelayMs);
-        }
+      if (result.noNewData) {
+        this.logger.log(`ℹ️ [${timeStr}] No new Platts data found. Will retry next window slot.`);
+        return;
+      }
+
+      throw new Error(result.error || 'Unknown error');
+    } catch (err) {
+      const errorMsg = (err as Error).message;
+      this.logger.error(`❌ [${timeStr}] Platts scrape failed: ${errorMsg}`);
+
+      // Only send failure alert on the LAST slot of the window (11:45)
+      const currentHour = now.toLocaleString('en-US', { timeZone: 'Europe/Madrid', hour: 'numeric', hour12: false });
+      const currentMin = now.toLocaleString('en-US', { timeZone: 'Europe/Madrid', minute: 'numeric' });
+      if (parseInt(currentHour) === 11 && parseInt(currentMin) >= 45) {
+        await this.sendTelegramAlert(
+          `❌ <b>Platts Scrape FAILED</b>\n\n` +
+          `Error: ${errorMsg}\n` +
+          `Window: 09:00-11:45 (all slots exhausted)\n\n` +
+          `⚠️ Manual data entry may be required.\n` +
+          `Use POST /api/platts/ingest endpoint.`
+        );
       }
     }
   }
