@@ -135,7 +135,7 @@ export class AuthController {
       };
     }
     await this.usersService.updateProfile(userId, update);
-    await this.usersService.completeOnboarding(userId);
+    await this.usersService.completedOnboarding(userId);
     return { success: true, message: 'Profile updated' };
   }
 }
