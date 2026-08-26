@@ -43,7 +43,7 @@ export class PlattsPrice {
   id: string;
 
   /** Date of the Platts report (YYYY-MM-DD) */
-  @Column({ type: 'date' })
+  @Column({ name: 'price_date', type: 'date' })
   priceDate: string;
 
   /** Commodity category (crude, diesel, gasoline, jet, naphtha, fueloil, etc.) */
@@ -55,19 +55,19 @@ export class PlattsPrice {
   region: PlattsRegion;
 
   /** Unique product key (e.g. ulsd_10ppm_fob_nwe, brent_front_month) */
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ name: 'product_key', type: 'varchar', length: 100 })
   productKey: string;
 
   /** Human-readable product label */
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ name: 'product_label', type: 'varchar', length: 255 })
   productLabel: string;
 
   /** Price in USD */
-  @Column({ type: 'decimal', precision: 12, scale: 4 })
+  @Column({ name: 'price_usd', type: 'decimal', precision: 12, scale: 4 })
   priceUsd: number;
 
   /** Price in EUR (computed using forex rate of the day) */
-  @Column({ type: 'decimal', precision: 12, scale: 4, nullable: true })
+  @Column({ name: 'price_eur', type: 'decimal', precision: 12, scale: 4, nullable: true })
   priceEur: number;
 
   /** Price unit ($/mt, $/bbl, $/mtCO2e) */
@@ -75,15 +75,15 @@ export class PlattsPrice {
   unit: string;
 
   /** Day-over-day change in USD */
-  @Column({ type: 'decimal', precision: 10, scale: 4, nullable: true })
+  @Column({ name: 'change_usd', type: 'decimal', precision: 10, scale: 4, nullable: true })
   changeUsd: number;
 
   /** Day-over-day change in percent */
-  @Column({ type: 'decimal', precision: 8, scale: 4, nullable: true })
+  @Column({ name: 'change_pct', type: 'decimal', precision: 8, scale: 4, nullable: true })
   changePct: number;
 
   /** Delivery/pricing type (FOB, CIF, Barge, Cargo, Futures, etc.) */
-  @Column({ type: 'varchar', length: 30, nullable: true })
+  @Column({ name: 'delivery_type', type: 'varchar', length: 30, nullable: true })
   deliveryType: string;
 
   /** Source (linkedin_scrape, manual, api) */
@@ -91,14 +91,14 @@ export class PlattsPrice {
   source: string;
 
   /** LinkedIn post URL if scraped */
-  @Column({ type: 'varchar', length: 500, nullable: true })
+  @Column({ name: 'source_url', type: 'varchar', length: 500, nullable: true })
   sourceUrl: string;
 
   /** Raw text snippet from the post for audit */
-  @Column({ type: 'text', nullable: true })
+  @Column({ name: 'raw_snippet', type: 'text', nullable: true })
   rawSnippet: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }
 
@@ -113,27 +113,27 @@ export class PlattsSnapshot {
   id: string;
 
   /** Report date (YYYY-MM-DD) */
-  @Column({ type: 'date' })
+  @Column({ name: 'report_date', type: 'date' })
   reportDate: string;
 
   /** Source publication (e.g. "S&P Global Platts European Marketscan") */
-  @Column({ type: 'varchar', length: 255, default: 'Platts European Marketscan' })
+  @Column({ name: 'source_pub', type: 'varchar', length: 255, default: 'Platts European Marketscan' })
   sourcePub: string;
 
   /** Volume/Issue if available */
-  @Column({ type: 'varchar', length: 50, nullable: true })
+  @Column({ name: 'volume_issue', type: 'varchar', length: 50, nullable: true })
   volumeIssue: string;
 
   /** EUR/USD forex rate for the day */
-  @Column({ type: 'decimal', precision: 8, scale: 4, nullable: true })
+  @Column({ name: 'eur_usd', type: 'decimal', precision: 8, scale: 4, nullable: true })
   eurUsd: number;
 
   /** GBP/USD forex rate */
-  @Column({ type: 'decimal', precision: 8, scale: 4, nullable: true })
+  @Column({ name: 'gbp_usd', type: 'decimal', precision: 8, scale: 4, nullable: true })
   gbpUsd: number;
 
   /** Brent front-month futures ($/bbl) */
-  @Column({ type: 'decimal', precision: 8, scale: 2, nullable: true })
+  @Column({ name: 'brent_front_month', type: 'decimal', precision: 8, scale: 2, nullable: true })
   brentFrontMonth: number;
 
   /** Context JSON (Rhine level, refinery news, sanctions, etc.) */
@@ -141,21 +141,21 @@ export class PlattsSnapshot {
   context: Record<string, any>;
 
   /** Full parsed data JSON (complete snapshot) */
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ name: 'full_data', type: 'jsonb', nullable: true })
   fullData: Record<string, any>;
 
   /** LinkedIn post URL */
-  @Column({ type: 'varchar', length: 500, nullable: true })
+  @Column({ name: 'linkedin_post_url', type: 'varchar', length: 500, nullable: true })
   linkedinPostUrl: string;
 
   /** Raw post text */
-  @Column({ type: 'text', nullable: true })
+  @Column({ name: 'raw_post_text', type: 'text', nullable: true })
   rawPostText: string;
 
   /** Processing status */
   @Column({ type: 'varchar', length: 20, default: 'processed' })
   status: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }
