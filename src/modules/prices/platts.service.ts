@@ -33,6 +33,7 @@ export class PlattsService {
     if (cached) return cached;
 
     const snapshot = await this.snapshotRepo.findOne({
+      where: {},
       order: { reportDate: 'DESC' },
     });
 
