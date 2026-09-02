@@ -1,8 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import Stripe from 'stripe';
 import { EmailService } from '../email/email.service';
+import { Subscription, SubscriptionStatus, SubscriptionPlan } from '../modules/subscriptions/entities/subscription.entity';
+import { User } from '../modules/users/entities/user.entity';
 
 @Injectable()
 export class StripeWebhookService {
@@ -13,6 +17,10 @@ export class StripeWebhookService {
   constructor(
     private readonly config: ConfigService,
     private readonly emailService: EmailService,
+    @InjectRepository(Subscription)
+    private readonly subscriptionRepo: Repository<Subscription>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
   ) {
     const key = this.config.get<string>('STRIPE_SECRET_KEY') || '';
     this.stripe = new Stripe(key);
@@ -45,9 +53,10 @@ export class StripeWebhookService {
     );
 
     // Extract user data from payment intent metadata
+    const userId = paymentIntent.metadata?.userId;
     const userEmail = paymentIntent.receipt_email || paymentIntent.metadata?.email;
     const userName = paymentIntent.metadata?.name || 'Usuario';
-    const plan = paymentIntent.metadata?.plan || 'PERSONAL';
+    const plan = paymentIntent.metadata?.plan || SubscriptionPlan.PARTICULAR;
 
     // Send confirmation email via SendGrid
     if (userEmail) {
@@ -66,13 +75,29 @@ export class StripeWebhookService {
       }
     }
 
-    // TODO: Update subscription in database
-    // const subscription = await findSubscriptionByPaymentIntentId(paymentIntent.id);
-    // if (subscription) {
-    //   subscription.status = 'active';
-    //   subscription.currentPeriodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
-    //   await subscription.save();
-    // }
+    // Update subscription in database if userId is available
+    if (userId) {
+      let subscription = await this.subscriptionRepo.findOne({ where: { userId } });
+      
+      if (subscription) {
+        subscription.status = SubscriptionStatus.ACTIVE;
+        subscription.currentPeriodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        subscription.currentPeriodStart = new Date();
+        await this.subscriptionRepo.save(subscription);
+        this.logger.log(`[STRIPE] Subscription activated for user ${userId}`);
+      } else {
+        // Create new subscription if doesn't exist
+        subscription = this.subscriptionRepo.create({
+          userId,
+          plan: plan as SubscriptionPlan,
+          status: SubscriptionStatus.ACTIVE,
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        });
+        await this.subscriptionRepo.save(subscription);
+        this.logger.log(`[STRIPE] Subscription created for user ${userId}`);
+      }
+    }
   }
 
   async handlePaymentIntentFailed(event: any): Promise<void> {
@@ -109,18 +134,28 @@ export class StripeWebhookService {
   }
 
   async handleCustomerSubscriptionDeleted(event: any): Promise<void> {
-    const subscription = event.data.object as any;
-    this.logger.log(`[STRIPE] Subscription deleted: ${subscription.id}`);
+    const stripeSubscription = event.data.object as any;
+    this.logger.log(`[STRIPE] Subscription deleted: ${stripeSubscription.id}`);
 
     // Send cancellation email
-    const userEmail = subscription.metadata?.email;
-    const userName = subscription.metadata?.name || 'Usuario';
+    const userEmail = stripeSubscription.metadata?.email;
+    const userName = stripeSubscription.metadata?.name || 'Usuario';
 
     if (userEmail) {
       await this.emailService.sendSubscriptionCancelled(userEmail, userName);
     }
 
-    // TODO: Mark subscription as canceled in database
+    // Mark subscription as canceled in database
+    if (stripeSubscription.id) {
+      await this.subscriptionRepo.update(
+        { stripeSubscriptionId: stripeSubscription.id },
+        {
+          status: SubscriptionStatus.CANCELED,
+          canceledAt: new Date(),
+        },
+      );
+      this.logger.log(`[STRIPE] Subscription canceled in DB: ${stripeSubscription.id}`);
+    }
   }
 
   async handleChargeRefunded(event: any): Promise<void> {
