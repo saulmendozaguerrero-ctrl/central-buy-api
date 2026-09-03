@@ -5,6 +5,7 @@ import { MonthlyReportJob } from './monthly-report.job';
 import { EcoScoreCalcJob } from './eco-score-calc.job';
 import { PriceImportJob } from './price-import.job';
 import { PlattsScrapeJob } from './platts-scrape.job';
+import { TrialExpiringJob } from './trial-expiring.job';
 import { MarketDataService } from '../services/market-data.service';
 import { Organization } from '../modules/organizations/entities/organization.entity';
 import { OrgMember } from '../modules/organizations/entities/org-member.entity';
@@ -15,6 +16,9 @@ import { EcoScore } from '../modules/fleet/entities/eco-score.entity';
 import { EcoScoreService } from '../modules/fleet/eco-score.service';
 import { PlattsPrice, PlattsSnapshot } from '../modules/prices/entities/platts-price.entity';
 import { PlattsService } from '../modules/prices/platts.service';
+import { Subscription } from '../modules/subscriptions/entities/subscription.entity';
+import { User } from '../modules/users/entities/user.entity';
+import { EmailService } from '../email/email.service';
 
 @Module({
   imports: [
@@ -28,6 +32,8 @@ import { PlattsService } from '../modules/prices/platts.service';
       EcoScore,
       PlattsPrice,
       PlattsSnapshot,
+      Subscription,
+      User,
     ]),
   ],
   providers: [
@@ -35,9 +41,11 @@ import { PlattsService } from '../modules/prices/platts.service';
     EcoScoreCalcJob,
     PriceImportJob,
     PlattsScrapeJob,
+    TrialExpiringJob,
     MarketDataService,
     EcoScoreService,
     PlattsService,
+    EmailService,
   ],
 })
 export class JobsModule {}
